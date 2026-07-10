@@ -154,12 +154,13 @@ def metric_card(label: str, value: str, note: str) -> None:
 
 
 @st.cache_data(show_spinner=False)
-def load_dashboard_data(path: str):
+def load_dashboard_data(path: str, file_size: int, file_mtime_ns: int):
     return data_loader.load_data(Path(path))
 
 
 default_file = data_loader.find_default_data_file(DATA_DIR)
-requirements, onboard, interview = load_dashboard_data(str(default_file))
+file_stat = default_file.stat()
+requirements, onboard, interview = load_dashboard_data(str(default_file), file_stat.st_size, file_stat.st_mtime_ns)
 metrics = overview_metrics(requirements, onboard)
 owners_df = owner_requirements(requirements)
 
