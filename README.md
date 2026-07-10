@@ -1,11 +1,11 @@
 # 优沃森项目招聘进度 Streamlit 看板
 
-这是一个基于 Excel 数据源生成的 Streamlit 招聘进度看板。
+这是一个基于 Excel 数据源生成的 Streamlit 招聘管理工作台。
 
 ## 项目结构
 
 - `app.py`: Streamlit 主应用
-- `data/`: 数据源文件夹，默认读取 `数据源6.29-7.3.xlsx`
+- `data/`: 数据源文件夹，默认自动读取文件名日期最新的 `.xlsx`
 - `utils/data-loader.py`: Excel 数据读取与清洗
 - `utils/metrics.py`: 指标计算与排序逻辑
 - `requirements.txt`: Streamlit Cloud 部署依赖
@@ -16,6 +16,11 @@
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+## 功能
+
+- 数据总览：招聘需求、入职、待招、P0 岗位、负责人进度等可视化看板
+- 招聘过程管理：岗位管理、按岗位上传简历、候选人流程看板、候选人台账维护
 
 ## 数据口径
 
