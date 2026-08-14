@@ -54,8 +54,7 @@ def pending_onboard(onboard: pd.DataFrame) -> pd.DataFrame:
 
 
 def running_priority(requirements: pd.DataFrame) -> pd.DataFrame:
-    owners_df = owner_requirements(requirements)
-    running = owners_df[owners_df["招聘状态"].eq("招聘进行中")].copy()
+    running = requirements[requirements["招聘状态"].eq("招聘进行中")].copy()
     if running.empty:
         return running
     running["优先级排序"] = running["招聘优先级"].fillna(99).astype(float)

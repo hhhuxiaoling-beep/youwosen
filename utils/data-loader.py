@@ -62,6 +62,9 @@ def clean_requirements(df: pd.DataFrame) -> pd.DataFrame:
     for col in ["项目", "业务负责人", "招聘负责人", "岗位", "Base地", "招聘状态", "阶段", "备注"]:
         if col in df.columns:
             df[col] = df[col].fillna("未填写").astype(str)
+    for col in ["需求提出日期", "需求完成日期"]:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], errors="coerce")
     return df
 
 
