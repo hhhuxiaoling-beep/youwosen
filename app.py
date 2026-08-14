@@ -196,13 +196,24 @@ def filter_requirements_by_controls(
     return filtered.copy()
 
 
-def filter_onboard_by_controls(df: pd.DataFrame, start_date: date, end_date: date, owners: list[str]) -> pd.DataFrame:
+def filter_onboard_by_controls(
+    df: pd.DataFrame,
+    start_date: date,
+    end_date: date,
+    owner_groups: list[str],
+    source_owners: list[str],
+    include_undated: bool,
+) -> pd.DataFrame:
     filtered = df.copy()
     if filtered.empty:
         return filtered
     if "拟入职日期" in filtered.columns:
         onboard_dates = pd.to_datetime(filtered["拟入职日期"], errors="coerce")
-        filtered = filtered[onboard_dates.dt.date.between(start_date, end_date, inclusive="both")]
+        date_mask = onboard_dates.dt.date.between(start_date, end_date, inclusive="both")
+        if include_undated:
+            date_mask = date_mask | onboard_dates.isna()
+        filtered = filtered[date_mask]
+    owners = expand_owner_groups(owner_groups, source_owners)
     if owners and "汇报对象" in filtered.columns:
         filtered = filtered[filtered["汇报对象"].isin(owners)]
     return filtered.copy()
@@ -227,7 +238,9 @@ onboard_dates = pd.to_datetime(onboard.get("拟入职日期", pd.Series(dtype="d
 period_dates = pd.concat([request_dates, onboard_dates], ignore_index=True)
 default_start = coerce_date(period_dates.min(), date(2026, 1, 1)) if not period_dates.empty else date(2026, 1, 1)
 default_end = coerce_date(period_dates.max(), date.today()) if not period_dates.empty else date.today()
-source_owners = requirements.get("业务负责人", pd.Series(dtype=str)).dropna().astype(str).unique().tolist()
+requirement_owners = requirements.get("业务负责人", pd.Series(dtype=str)).dropna().astype(str).unique().tolist()
+onboard_owners = onboard.get("汇报对象", pd.Series(dtype=str)).dropna().astype(str).unique().tolist()
+source_owners = list(dict.fromkeys(requirement_owners + onboard_owners))
 owner_options = ordered_owner_options(source_owners)
 project_options = ["全部"] + [project for project in ["优沃森", "淘宝闪购"] if project in set(requirements.get("项目", pd.Series(dtype=str)).dropna().astype(str))]
 
@@ -278,7 +291,8 @@ if start_date > end_date:
 active_owner_groups = selected_owner_groups or owner_options
 active_owners = expand_owner_groups(active_owner_groups, source_owners)
 requirements = filter_requirements_by_controls(requirements, start_date, end_date, active_owner_groups, source_owners, selected_project)
-onboard = filter_onboard_by_controls(onboard, start_date, end_date, active_owners)
+include_undated_onboard = start_date <= default_start and end_date >= default_end
+onboard = filter_onboard_by_controls(onboard, start_date, end_date, active_owner_groups, source_owners, include_undated_onboard)
 metrics = overview_metrics(requirements, onboard)
 owners_df = visible_owner_requirements(requirements, active_owners)
 
