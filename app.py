@@ -202,7 +202,7 @@ def filter_onboard_by_controls(df: pd.DataFrame, start_date: date, end_date: dat
         return filtered
     if "拟入职日期" in filtered.columns:
         onboard_dates = pd.to_datetime(filtered["拟入职日期"], errors="coerce")
-        filtered = filtered[onboard_dates.dt.date.between(start_date, end_date, inclusive="both") | onboard_dates.isna()]
+        filtered = filtered[onboard_dates.dt.date.between(start_date, end_date, inclusive="both")]
     if owners and "汇报对象" in filtered.columns:
         filtered = filtered[filtered["汇报对象"].isin(owners)]
     return filtered.copy()
@@ -223,8 +223,10 @@ default_file = data_loader.find_default_data_file(DATA_DIR)
 file_stat = default_file.stat()
 requirements, onboard, interview = load_dashboard_data(str(default_file), file_stat.st_size, file_stat.st_mtime_ns)
 request_dates = pd.to_datetime(requirements.get("需求提出日期", pd.Series(dtype="datetime64[ns]")), errors="coerce").dropna()
-default_start = coerce_date(request_dates.min(), date(2026, 1, 1)) if not request_dates.empty else date(2026, 1, 1)
-default_end = coerce_date(request_dates.max(), date.today()) if not request_dates.empty else date.today()
+onboard_dates = pd.to_datetime(onboard.get("拟入职日期", pd.Series(dtype="datetime64[ns]")), errors="coerce").dropna()
+period_dates = pd.concat([request_dates, onboard_dates], ignore_index=True)
+default_start = coerce_date(period_dates.min(), date(2026, 1, 1)) if not period_dates.empty else date(2026, 1, 1)
+default_end = coerce_date(period_dates.max(), date.today()) if not period_dates.empty else date.today()
 source_owners = requirements.get("业务负责人", pd.Series(dtype=str)).dropna().astype(str).unique().tolist()
 owner_options = ordered_owner_options(source_owners)
 project_options = ["全部"] + [project for project in ["优沃森", "淘宝闪购"] if project in set(requirements.get("项目", pd.Series(dtype=str)).dropna().astype(str))]
@@ -251,7 +253,7 @@ with filter_project:
     )
 with filter_left:
     selected_period = st.date_input(
-        "需求提出周期",
+        "数据周期",
         value=(default_start, default_end),
         min_value=default_start,
         max_value=default_end,
