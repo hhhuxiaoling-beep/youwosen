@@ -8,6 +8,7 @@ import pandas as pd
 
 SHEET_REQUIREMENTS = "优沃森需求明细&岗位JD"
 SHEET_ONBOARD = "待入职表-优沃森"
+SHEET_ONBOARD_CANDIDATES = ["待入职表-优沃森", "优沃森待入职表"]
 SHEET_INTERVIEW_CANDIDATES = ["面试记录表-优沃森", "面试记录表"]
 
 
@@ -37,7 +38,7 @@ def read_workbook(path: Path) -> dict[str, pd.DataFrame]:
     workbook = pd.ExcelFile(path)
     return {
         SHEET_REQUIREMENTS: _read_first_existing_sheet(path, workbook, [SHEET_REQUIREMENTS]),
-        SHEET_ONBOARD: _read_first_existing_sheet(path, workbook, [SHEET_ONBOARD]),
+        SHEET_ONBOARD: _read_first_existing_sheet(path, workbook, SHEET_ONBOARD_CANDIDATES),
         "面试记录表": _read_first_existing_sheet(path, workbook, SHEET_INTERVIEW_CANDIDATES),
     }
 
@@ -70,6 +71,19 @@ def clean_requirements(df: pd.DataFrame) -> pd.DataFrame:
 
 def clean_onboard(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    rename_map = {
+        "人员姓名": "候选人姓名",
+        "办公地点": "Base地",
+        "岗位名称": "拟定岗位",
+        "招聘渠道": "渠道来源",
+        "用工类型": "聘用类型",
+        "是否已入职": "入职状态",
+        "入职日期": "拟入职日期",
+        "招聘负责人": "HR",
+    }
+    for source, target in rename_map.items():
+        if source in df.columns and target not in df.columns:
+            df[target] = df[source]
     for col in ["HR", "候选人姓名", "Base地", "拟定岗位", "汇报对象", "渠道来源", "聘用类型", "入职状态"]:
         if col in df.columns:
             df[col] = df[col].fillna("未填写").astype(str)
