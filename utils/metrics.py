@@ -48,8 +48,7 @@ def pending_onboard(onboard: pd.DataFrame) -> pd.DataFrame:
     pending = onboard[onboard["入职状态"].eq("待入职")].copy()
     if pending.empty:
         return pending
-    pending["业务负责人"] = pending["汇报对象"]
-    pending = pending.sort_values(["业务负责人", "拟定岗位", "拟入职日期"], ascending=[True, True, True], na_position="last")
+    pending = pending.sort_values(["汇报对象", "拟定岗位", "拟入职日期"], ascending=[True, True, True], na_position="last")
     return pending
 
 

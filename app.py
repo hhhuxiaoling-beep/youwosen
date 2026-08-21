@@ -241,15 +241,14 @@ def joined_this_week(onboard_df: pd.DataFrame, week_start: date, week_end: date)
     ].copy()
     if joined.empty:
         return joined
-    joined["业务负责人"] = joined["汇报对象"]
-    return joined.sort_values(["业务负责人", "拟定岗位", "拟入职日期"], ascending=[True, True, True], na_position="last")
+    return joined.sort_values(["汇报对象", "拟定岗位", "拟入职日期"], ascending=[True, True, True], na_position="last")
 
 
 def render_onboard_table(df: pd.DataFrame, empty_text: str) -> None:
     if df.empty:
         st.info(empty_text)
         return
-    display = df[["业务负责人", "拟定岗位", "候选人姓名", "拟入职日期", "Base地", "HR", "渠道来源", "聘用类型"]].copy()
+    display = df[["汇报对象", "拟定岗位", "候选人姓名", "拟入职日期", "Base地", "HR", "渠道来源", "聘用类型"]].copy()
     display["拟入职日期"] = pd.to_datetime(display["拟入职日期"], errors="coerce").dt.strftime("%Y-%m-%d").fillna("未定")
     display = display.rename(columns={"拟定岗位": "岗位", "候选人姓名": "候选人", "拟入职日期": "入职时间", "渠道来源": "渠道"})
     st.dataframe(display, use_container_width=True, hide_index=True)
