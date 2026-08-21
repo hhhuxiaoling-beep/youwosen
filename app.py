@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -225,6 +225,36 @@ def visible_owner_requirements(requirements_df: pd.DataFrame, owners: list[str])
     return requirements_df[requirements_df["业务负责人"].isin(owners)].copy()
 
 
+def current_week_range(today: date | None = None) -> tuple[date, date]:
+    today = today or date.today()
+    week_start = today - timedelta(days=today.weekday())
+    return week_start, week_start + timedelta(days=6)
+
+
+def joined_this_week(onboard_df: pd.DataFrame, week_start: date, week_end: date) -> pd.DataFrame:
+    if onboard_df.empty or "入职状态" not in onboard_df.columns or "拟入职日期" not in onboard_df.columns:
+        return pd.DataFrame()
+    onboard_dates = pd.to_datetime(onboard_df["拟入职日期"], errors="coerce")
+    joined = onboard_df[
+        onboard_df["入职状态"].eq("入职")
+        & onboard_dates.dt.date.between(week_start, week_end, inclusive="both")
+    ].copy()
+    if joined.empty:
+        return joined
+    joined["业务负责人"] = joined["汇报对象"]
+    return joined.sort_values(["业务负责人", "拟定岗位", "拟入职日期"], ascending=[True, True, True], na_position="last")
+
+
+def render_onboard_table(df: pd.DataFrame, empty_text: str) -> None:
+    if df.empty:
+        st.info(empty_text)
+        return
+    display = df[["业务负责人", "拟定岗位", "候选人姓名", "拟入职日期", "Base地", "HR", "渠道来源", "聘用类型"]].copy()
+    display["拟入职日期"] = pd.to_datetime(display["拟入职日期"], errors="coerce").dt.strftime("%Y-%m-%d").fillna("未定")
+    display = display.rename(columns={"拟定岗位": "岗位", "候选人姓名": "候选人", "拟入职日期": "入职时间", "渠道来源": "渠道"})
+    st.dataframe(display, use_container_width=True, hide_index=True)
+
+
 @st.cache_data(show_spinner=False)
 def load_dashboard_data(path: str, file_size: int, file_mtime_ns: int):
     return data_loader.load_data(Path(path))
@@ -315,17 +345,19 @@ with cols[3]:
 with cols[4]:
     metric_card("剩余待招数", str(metrics["gap"]), f"已选负责人剩余 {int(owners_df['剩余待招'].sum()) if '剩余待招' in owners_df else 0}；P0 岗位优先凸出")
 
+week_start, week_end = current_week_range()
+joined_week_df = joined_this_week(onboard, week_start, week_end)
 pending_df = pending_onboard(onboard)
 with st.container():
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
-    st.subheader("待入职人员信息")
-    if pending_df.empty:
-        st.info("暂无待入职人员")
-    else:
-        display = pending_df[["业务负责人", "拟定岗位", "候选人姓名", "拟入职日期", "Base地", "HR", "渠道来源", "聘用类型"]].copy()
-        display["拟入职日期"] = display["拟入职日期"].dt.strftime("%Y-%m-%d").fillna("未定")
-        display = display.rename(columns={"拟定岗位": "岗位", "候选人姓名": "候选人", "拟入职日期": "入职时间", "渠道来源": "渠道"})
-        st.dataframe(display, use_container_width=True, hide_index=True)
+    st.subheader("入职人员信息")
+    joined_col, pending_col = st.columns(2)
+    with joined_col:
+        st.markdown(f"##### 本周入职（{week_start:%m/%d}-{week_end:%m/%d}）")
+        render_onboard_table(joined_week_df, "暂无本周入职人员")
+    with pending_col:
+        st.markdown("##### 待入职")
+        render_onboard_table(pending_df, "暂无待入职人员")
     st.markdown("</div>", unsafe_allow_html=True)
 
 running_df = running_priority(requirements)
