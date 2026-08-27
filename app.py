@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit.components.v1 as components
 
 from utils.metrics import (
     BUSINESS_OWNERS,
@@ -21,6 +22,7 @@ from utils.metrics import (
 
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
+XMIND_SHARE_URL = "https://app.xmind.cn/share/41hH9ZGj"
 OWNER_DISPLAY_ORDER = ["吴双双", "张蓉蓉", "郭周洲", "其他", "巢育敏", "刘新风"]
 NAMED_OWNER_GROUPS = [owner for owner in OWNER_DISPLAY_ORDER if owner != "其他"]
 
@@ -133,6 +135,16 @@ st.markdown(
         background: linear-gradient(180deg,#fff7ed,#fff);
         border-radius: 10px;
         padding: 14px;
+    }
+    .xmind-link {
+        display: inline-block;
+        margin: 10px 0 18px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: #1c2430;
+        color: white !important;
+        text-decoration: none;
+        font-weight: 700;
     }
     </style>
     """,
@@ -284,6 +296,26 @@ st.markdown(
 )
 
 st.caption(f"当前数据源：`{default_file.name}`")
+
+page = st.sidebar.radio("页面", ["招聘进度看板", "组织架构 XMind"], index=0)
+
+if page == "组织架构 XMind":
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.subheader("优沃森&淘宝闪购组织架构")
+    st.markdown(f'<a class="xmind-link" href="{XMIND_SHARE_URL}" target="_blank">打开 XMind 原图</a>', unsafe_allow_html=True)
+    components.html(
+        f"""
+        <iframe
+            src="{XMIND_SHARE_URL}"
+            style="width:100%;height:760px;border:1px solid #d9e4ef;border-radius:10px;background:#fff;"
+            allowfullscreen
+        ></iframe>
+        """,
+        height=790,
+        scrolling=True,
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.stop()
 
 filter_project, filter_left, filter_right = st.columns([0.9, 1.1, 1.4])
 with filter_project:
