@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import importlib.util
 from datetime import date, timedelta
 from pathlib import Path
@@ -7,7 +8,6 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import streamlit.components.v1 as components
 
 from utils.metrics import (
     BUSINESS_OWNERS,
@@ -23,6 +23,7 @@ from utils.metrics import (
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
 XMIND_SHARE_URL = "https://app.xmind.cn/share/41hH9ZGj"
+XMIND_IMAGE_PATH = ROOT / "assets" / "xmind-org-chart.png"
 OWNER_DISPLAY_ORDER = ["吴双双", "张蓉蓉", "郭周洲", "其他", "巢育敏", "刘新风"]
 NAMED_OWNER_GROUPS = [owner for owner in OWNER_DISPLAY_ORDER if owner != "其他"]
 
@@ -146,6 +147,19 @@ st.markdown(
         text-decoration: none;
         font-weight: 700;
     }
+    .xmind-image-frame {
+        border: 1px solid #d9e4ef;
+        border-radius: 10px;
+        background: #fff;
+        padding: 12px;
+        overflow-x: auto;
+    }
+    .xmind-image-frame img {
+        display: block;
+        width: 100%;
+        min-width: 980px;
+        height: auto;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -266,6 +280,28 @@ def render_onboard_table(df: pd.DataFrame, empty_text: str) -> None:
     st.dataframe(display, use_container_width=True, hide_index=True)
 
 
+@st.cache_data(ttl=60 * 60 * 24, show_spinner=False)
+def load_xmind_image_bytes(path: str, file_size: int, file_mtime_ns: int) -> bytes:
+    return Path(path).read_bytes()
+
+
+def render_xmind_image(image_path: Path) -> None:
+    if not image_path.exists():
+        st.warning("暂无组织架构图片")
+        return
+    image_stat = image_path.stat()
+    image_bytes = load_xmind_image_bytes(str(image_path), image_stat.st_size, image_stat.st_mtime_ns)
+    image_data = base64.b64encode(image_bytes).decode("ascii")
+    st.markdown(
+        f"""
+        <div class="xmind-image-frame">
+            <img src="data:image/png;base64,{image_data}" alt="优沃森&淘宝闪购组织架构">
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 @st.cache_data(show_spinner=False)
 def load_dashboard_data(path: str, file_size: int, file_mtime_ns: int):
     return data_loader.load_data(Path(path))
@@ -303,17 +339,7 @@ if page == "组织架构 XMind":
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.subheader("优沃森&淘宝闪购组织架构")
     st.markdown(f'<a class="xmind-link" href="{XMIND_SHARE_URL}" target="_blank">打开 XMind 原图</a>', unsafe_allow_html=True)
-    components.html(
-        f"""
-        <iframe
-            src="{XMIND_SHARE_URL}"
-            style="width:100%;height:760px;border:1px solid #d9e4ef;border-radius:10px;background:#fff;"
-            allowfullscreen
-        ></iframe>
-        """,
-        height=790,
-        scrolling=True,
-    )
+    render_xmind_image(XMIND_IMAGE_PATH)
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
