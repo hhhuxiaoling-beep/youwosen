@@ -15,6 +15,7 @@ from zoneinfo import ZoneInfo
 BEIJING_TZ = ZoneInfo("Asia/Shanghai")
 DEFAULT_SHEETS = ["优沃森组织架构", "淘宝闪购组织架构", "优沃森直营店"]
 DEFAULT_CACHE_DIR = Path(os.getenv("XMIND_CACHE_DIR", Path(tempfile.gettempdir()) / "youwosen_xmind_cache"))
+EXPORTER_REVISION = "2026-08-28.1"
 
 
 @dataclass(frozen=True)
