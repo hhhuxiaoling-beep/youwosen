@@ -324,37 +324,137 @@ def load_dashboard_data(path: str, file_size: int, file_mtime_ns: int):
 
 
 @st.cache_data(ttl=10 * 60, show_spinner=False)
-def load_feishu_dashboard_data(requirements_link: str, onboard_link: str, app_id: str, app_secret: str):
-    return data_loader.load_feishu_data(requirements_link, onboard_link, app_id, app_secret)
+def load_feishu_dashboard_data(
+    requirements_link: str,
+    onboard_link: str,
+    requirements_app_id: str,
+    requirements_app_secret: str,
+    onboard_app_id: str,
+    onboard_app_secret: str,
+):
+    return data_loader.load_feishu_data(
+        requirements_link,
+        onboard_link,
+        requirements_app_id,
+        requirements_app_secret,
+        onboard_app_id,
+        onboard_app_secret,
+    )
 
 
-def secret_value(key: str, section: str | None = None, section_key: str | None = None) -> str:
-    value = os.getenv(key, "")
-    if value:
-        return value
+def secret_value(*keys: str) -> str:
+    for key in keys:
+        value = os.getenv(key, "")
+        if value:
+            return value
     try:
-        if key in st.secrets:
-            return str(st.secrets[key])
-        if section and section in st.secrets:
-            nested_value = st.secrets[section].get(section_key or key, "")
-            return str(nested_value) if nested_value else ""
+        for key in keys:
+            if key in st.secrets:
+                return str(st.secrets[key])
     except Exception:
         return ""
     return ""
 
 
-feishu_app_id = secret_value("FEISHU_APP_ID", "feishu", "app_id")
-feishu_app_secret = secret_value("FEISHU_APP_SECRET", "feishu", "app_secret")
+def section_secret(section_path: tuple[str, ...], section_key: str) -> str:
+    try:
+        current = st.secrets
+        for section in section_path:
+            if section not in current:
+                return ""
+            current = current[section]
+        value = current.get(section_key, "")
+        return str(value) if value else ""
+    except Exception:
+        return ""
+
+
+def secret_pair(app_id_keys: tuple[str, ...], app_secret_keys: tuple[str, ...], sections: tuple[tuple[str, ...], ...]) -> tuple[str, str]:
+    for section in sections:
+        app_id = section_secret(section, "app_id")
+        app_secret = section_secret(section, "app_secret")
+        if app_id and app_secret:
+            return app_id, app_secret
+    return (
+        secret_value(*app_id_keys),
+        secret_value(*app_secret_keys),
+    )
+
+
+requirements_app_id, requirements_app_secret = secret_pair(
+    (
+        "FEISHU_REQUIREMENTS_APP_ID",
+        "FEISHU_REQUIREMENT_APP_ID",
+        "FEISHU_DEMAND_APP_ID",
+        "FEISHU_APP_ID_REQUIREMENTS",
+        "FEISHU_APP_ID_DEMAND",
+        "FEISHU_APP_ID_1",
+        "FEISHU_APP_ID",
+    ),
+    (
+        "FEISHU_REQUIREMENTS_APP_SECRET",
+        "FEISHU_REQUIREMENT_APP_SECRET",
+        "FEISHU_DEMAND_APP_SECRET",
+        "FEISHU_APP_SECRET_REQUIREMENTS",
+        "FEISHU_APP_SECRET_DEMAND",
+        "FEISHU_APP_SECRET_1",
+        "FEISHU_APP_SECRET",
+    ),
+    (("feishu_requirements",), ("feishu_requirement",), ("feishu_demand",), ("feishu", "requirements"), ("feishu", "demand"), ("feishu",)),
+)
+onboard_app_id, onboard_app_secret = secret_pair(
+    (
+        "FEISHU_ONBOARD_APP_ID",
+        "FEISHU_ONBOARDING_APP_ID",
+        "FEISHU_ENTRY_APP_ID",
+        "FEISHU_APP_ID_ONBOARD",
+        "FEISHU_APP_ID_ONBOARDING",
+        "FEISHU_APP_ID_ENTRY",
+        "FEISHU_APP_ID_2",
+        "FEISHU_APP_ID",
+    ),
+    (
+        "FEISHU_ONBOARD_APP_SECRET",
+        "FEISHU_ONBOARDING_APP_SECRET",
+        "FEISHU_ENTRY_APP_SECRET",
+        "FEISHU_APP_SECRET_ONBOARD",
+        "FEISHU_APP_SECRET_ONBOARDING",
+        "FEISHU_APP_SECRET_ENTRY",
+        "FEISHU_APP_SECRET_2",
+        "FEISHU_APP_SECRET",
+    ),
+    (("feishu_onboard",), ("feishu_onboarding",), ("feishu_entry",), ("feishu", "onboard"), ("feishu", "onboarding"), ("feishu", "entry"), ("feishu",)),
+)
 default_file = data_loader.find_default_data_file(DATA_DIR)
 data_source_label = f"Excel：{default_file.name}"
-if feishu_app_id and feishu_app_secret:
+has_any_feishu_secret = any([requirements_app_id, requirements_app_secret, onboard_app_id, onboard_app_secret])
+has_all_feishu_secrets = all([requirements_app_id, requirements_app_secret, onboard_app_id, onboard_app_secret])
+if has_all_feishu_secrets:
     try:
-        requirements, onboard, interview = load_feishu_dashboard_data(FEISHU_REQUIREMENTS_URL, FEISHU_ONBOARD_URL, feishu_app_id, feishu_app_secret)
+        requirements, onboard, interview = load_feishu_dashboard_data(
+            FEISHU_REQUIREMENTS_URL,
+            FEISHU_ONBOARD_URL,
+            requirements_app_id,
+            requirements_app_secret,
+            onboard_app_id,
+            onboard_app_secret,
+        )
         data_source_label = "飞书多维表格：2026招聘进度表汇总统计表 / 优沃森待入职表"
     except Exception as exc:
-        st.warning(f"飞书数据读取失败，已自动切回本地 Excel：{exc}")
-        file_stat = default_file.stat()
-        requirements, onboard, interview = load_dashboard_data(str(default_file), file_stat.st_size, file_stat.st_mtime_ns)
+        st.error(f"飞书数据读取失败，已停止使用 Excel 兜底：{exc}")
+        st.stop()
+elif has_any_feishu_secret:
+    missing = []
+    if not requirements_app_id:
+        missing.append("需求表 app_id")
+    if not requirements_app_secret:
+        missing.append("需求表 app_secret")
+    if not onboard_app_id:
+        missing.append("待入职表 app_id")
+    if not onboard_app_secret:
+        missing.append("待入职表 app_secret")
+    st.error("飞书密钥未配置完整，已停止使用 Excel 兜底。缺少：" + "、".join(missing))
+    st.stop()
 else:
     file_stat = default_file.stat()
     requirements, onboard, interview = load_dashboard_data(str(default_file), file_stat.st_size, file_stat.st_mtime_ns)

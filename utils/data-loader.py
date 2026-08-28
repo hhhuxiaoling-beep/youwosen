@@ -203,10 +203,23 @@ def _coerce_possible_feishu_dates(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def load_feishu_data(requirements_link: str, onboard_link: str, app_id: str, app_secret: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def load_feishu_table(link: str, app_id: str, app_secret: str) -> pd.DataFrame:
     token = get_feishu_tenant_access_token(app_id, app_secret)
-    requirements = clean_requirements(_coerce_possible_feishu_dates(_list_feishu_records(requirements_link, token)))
-    onboard = clean_onboard(_coerce_possible_feishu_dates(_list_feishu_records(onboard_link, token)))
+    return _coerce_possible_feishu_dates(_list_feishu_records(link, token))
+
+
+def load_feishu_data(
+    requirements_link: str,
+    onboard_link: str,
+    requirements_app_id: str,
+    requirements_app_secret: str,
+    onboard_app_id: str | None = None,
+    onboard_app_secret: str | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    onboard_app_id = onboard_app_id or requirements_app_id
+    onboard_app_secret = onboard_app_secret or requirements_app_secret
+    requirements = clean_requirements(load_feishu_table(requirements_link, requirements_app_id, requirements_app_secret))
+    onboard = clean_onboard(load_feishu_table(onboard_link, onboard_app_id, onboard_app_secret))
     return requirements, onboard, pd.DataFrame()
 
 

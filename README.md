@@ -21,13 +21,21 @@ streamlit run app.py
 
 应用会优先读取飞书多维表格；未配置飞书密钥时，自动回退到 `data/` 目录里的最新 Excel。
 
-需要在 Streamlit Secrets 或本地环境变量中配置：
+两个飞书链接不在同一个飞书空间时，需要在 Streamlit Secrets 中分别配置两套应用密钥：
 
 ```toml
-[feishu]
+[feishu_requirements]
+app_id = "cli_xxx"
+app_secret = "xxx"
+
+[feishu_onboard]
 app_id = "cli_xxx"
 app_secret = "xxx"
 ```
+
+也兼容环境变量 `FEISHU_REQUIREMENTS_APP_ID` / `FEISHU_REQUIREMENTS_APP_SECRET` 与
+`FEISHU_ONBOARD_APP_ID` / `FEISHU_ONBOARD_APP_SECRET`。旧的 `FEISHU_APP_ID` /
+`FEISHU_APP_SECRET` 仅适合两张表在同一飞书空间、同一应用有权限时使用。
 
 当前飞书读取来源：
 
