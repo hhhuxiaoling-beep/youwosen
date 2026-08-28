@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
+from typing import Any
+from urllib.parse import parse_qs, quote, urlparse
+from urllib.request import Request, urlopen
 
 import pandas as pd
 
@@ -10,6 +14,7 @@ SHEET_REQUIREMENTS = "优沃森需求明细&岗位JD"
 SHEET_ONBOARD = "待入职表-优沃森"
 SHEET_ONBOARD_CANDIDATES = ["待入职表-优沃森", "优沃森待入职表"]
 SHEET_INTERVIEW_CANDIDATES = ["面试记录表-优沃森", "面试记录表"]
+FEISHU_API_BASE = "https://open.feishu.cn/open-apis"
 
 
 def _date_score(path: Path) -> tuple[int, int, str]:
@@ -90,6 +95,119 @@ def clean_onboard(df: pd.DataFrame) -> pd.DataFrame:
     if "拟入职日期" in df.columns:
         df["拟入职日期"] = pd.to_datetime(df["拟入职日期"], errors="coerce")
     return df
+
+
+def _request_json(url: str, method: str = "GET", token: str | None = None, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    data = json.dumps(payload).encode("utf-8") if payload is not None else None
+    headers = {"Content-Type": "application/json; charset=utf-8"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = Request(url, data=data, headers=headers, method=method)
+    with urlopen(request, timeout=30) as response:
+        result = json.loads(response.read().decode("utf-8"))
+    if result.get("code", 0) != 0:
+        raise RuntimeError(f"Feishu API error {result.get('code')}: {result.get('msg')}")
+    return result
+
+
+def get_feishu_tenant_access_token(app_id: str, app_secret: str) -> str:
+    result = _request_json(
+        f"{FEISHU_API_BASE}/auth/v3/tenant_access_token/internal",
+        method="POST",
+        payload={"app_id": app_id, "app_secret": app_secret},
+    )
+    token = result.get("tenant_access_token") or result.get("data", {}).get("tenant_access_token")
+    if not token:
+        raise RuntimeError("Feishu tenant_access_token not found in response")
+    return token
+
+
+def _parse_feishu_link(link: str, token: str) -> dict[str, str | None]:
+    parsed = urlparse(link)
+    path_parts = [part for part in parsed.path.split("/") if part]
+    query = parse_qs(parsed.query)
+    table_id = query.get("table", [None])[0]
+    view_id = query.get("view", [None])[0]
+    app_token = None
+
+    if len(path_parts) >= 2 and path_parts[0] == "base":
+        app_token = path_parts[1]
+    elif len(path_parts) >= 2 and path_parts[0] == "wiki":
+        wiki_token = path_parts[1]
+        node = _request_json(f"{FEISHU_API_BASE}/wiki/v2/spaces/get_node?token={quote(wiki_token)}", token=token)
+        app_token = node.get("data", {}).get("node", {}).get("obj_token")
+
+    if not app_token:
+        raise ValueError(f"Cannot parse Feishu app token from link: {link}")
+    if not table_id:
+        raise ValueError(f"Cannot parse Feishu table id from link: {link}")
+    return {"app_token": app_token, "table_id": table_id, "view_id": view_id}
+
+
+def _normalize_feishu_value(value: Any) -> Any:
+    if isinstance(value, list):
+        normalized = [_normalize_feishu_value(item) for item in value]
+        normalized = [item for item in normalized if item not in (None, "")]
+        return ", ".join(map(str, normalized)) if normalized else None
+    if isinstance(value, dict):
+        for key in ("text", "name", "zh_name", "en_name", "value", "email", "link"):
+            if key in value and value[key] not in (None, ""):
+                return _normalize_feishu_value(value[key])
+        return ", ".join(f"{key}:{_normalize_feishu_value(val)}" for key, val in value.items() if val not in (None, ""))
+    return value
+
+
+def _feishu_records_to_dataframe(records: list[dict[str, Any]]) -> pd.DataFrame:
+    rows = []
+    for record in records:
+        fields = record.get("fields", {})
+        rows.append({key: _normalize_feishu_value(value) for key, value in fields.items()})
+    return pd.DataFrame(rows)
+
+
+def _list_feishu_records(link: str, token: str) -> pd.DataFrame:
+    info = _parse_feishu_link(link, token)
+    app_token = quote(str(info["app_token"]), safe="")
+    table_id = quote(str(info["table_id"]), safe="")
+    page_token = ""
+    records: list[dict[str, Any]] = []
+    while True:
+        params = ["page_size=100"]
+        if info["view_id"]:
+            params.append(f"view_id={quote(str(info['view_id']))}")
+        if page_token:
+            params.append(f"page_token={quote(page_token)}")
+        url = f"{FEISHU_API_BASE}/bitable/v1/apps/{app_token}/tables/{table_id}/records?{'&'.join(params)}"
+        result = _request_json(url, token=token)
+        data = result.get("data", {})
+        records.extend(data.get("items", []))
+        if not data.get("has_more"):
+            break
+        page_token = data.get("page_token", "")
+        if not page_token:
+            break
+    return _feishu_records_to_dataframe(records)
+
+
+def _coerce_possible_feishu_dates(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    for col in ["需求提出日期", "需求完成日期", "OFFER时间", "入职日期", "拟入职日期"]:
+        if col not in df.columns:
+            continue
+        numeric_values = pd.to_numeric(df[col], errors="coerce")
+        timestamp_mask = numeric_values.notna() & numeric_values.gt(10_000_000_000)
+        parsed = pd.to_datetime(df[col], errors="coerce")
+        if timestamp_mask.any():
+            parsed.loc[timestamp_mask] = pd.to_datetime(numeric_values.loc[timestamp_mask], unit="ms", errors="coerce")
+        df[col] = parsed
+    return df
+
+
+def load_feishu_data(requirements_link: str, onboard_link: str, app_id: str, app_secret: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    token = get_feishu_tenant_access_token(app_id, app_secret)
+    requirements = clean_requirements(_coerce_possible_feishu_dates(_list_feishu_records(requirements_link, token)))
+    onboard = clean_onboard(_coerce_possible_feishu_dates(_list_feishu_records(onboard_link, token)))
+    return requirements, onboard, pd.DataFrame()
 
 
 def load_data(path: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:

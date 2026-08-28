@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import importlib.util
+import os
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -22,6 +23,8 @@ from utils.metrics import (
 
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
+FEISHU_REQUIREMENTS_URL = "https://mf02fgn9ss.feishu.cn/base/QhMGb6r0OaSwCXsjCcscotvSnl4?table=tblpDsiprOLAZhP6&view=vewM60kcII"
+FEISHU_ONBOARD_URL = "https://hcncxio17i0e.feishu.cn/wiki/G2awwEeASiJCfPkRXxGcdxpcncf?table=tblo2OpZA4Omhr5c&view=vewM1Y9Vem"
 XMIND_SHARE_URL = "https://app.xmind.cn/share/41hH9ZGj"
 XMIND_IMAGE_PATH = ROOT / "assets" / "xmind-org-chart.png"
 OWNER_DISPLAY_ORDER = ["吴双双", "张蓉蓉", "郭周洲", "其他", "巢育敏", "刘新风"]
@@ -222,6 +225,17 @@ def filter_requirements_by_controls(
     return filtered.copy()
 
 
+def filter_onboard_by_project(df: pd.DataFrame, project_line: str) -> pd.DataFrame:
+    if project_line == "全部" or df.empty:
+        return df.copy()
+    filtered = df.copy()
+    if "项目" in filtered.columns:
+        return filtered[filtered["项目"].astype(str).str.contains(project_line, na=False)].copy()
+    if "岗位所属板块" in filtered.columns:
+        return filtered[filtered["岗位所属板块"].astype(str).str.contains(project_line, na=False)].copy()
+    return filtered
+
+
 def filter_onboard_by_controls(
     df: pd.DataFrame,
     start_date: date,
@@ -229,10 +243,12 @@ def filter_onboard_by_controls(
     owner_groups: list[str],
     source_owners: list[str],
     include_undated: bool,
+    project_line: str,
 ) -> pd.DataFrame:
     filtered = df.copy()
     if filtered.empty:
         return filtered
+    filtered = filter_onboard_by_project(filtered, project_line)
     if "拟入职日期" in filtered.columns:
         onboard_dates = pd.to_datetime(filtered["拟入职日期"], errors="coerce")
         date_mask = onboard_dates.dt.date.between(start_date, end_date, inclusive="both")
@@ -307,9 +323,41 @@ def load_dashboard_data(path: str, file_size: int, file_mtime_ns: int):
     return data_loader.load_data(Path(path))
 
 
+@st.cache_data(ttl=10 * 60, show_spinner=False)
+def load_feishu_dashboard_data(requirements_link: str, onboard_link: str, app_id: str, app_secret: str):
+    return data_loader.load_feishu_data(requirements_link, onboard_link, app_id, app_secret)
+
+
+def secret_value(key: str, section: str | None = None, section_key: str | None = None) -> str:
+    value = os.getenv(key, "")
+    if value:
+        return value
+    try:
+        if key in st.secrets:
+            return str(st.secrets[key])
+        if section and section in st.secrets:
+            nested_value = st.secrets[section].get(section_key or key, "")
+            return str(nested_value) if nested_value else ""
+    except Exception:
+        return ""
+    return ""
+
+
+feishu_app_id = secret_value("FEISHU_APP_ID", "feishu", "app_id")
+feishu_app_secret = secret_value("FEISHU_APP_SECRET", "feishu", "app_secret")
 default_file = data_loader.find_default_data_file(DATA_DIR)
-file_stat = default_file.stat()
-requirements, onboard, interview = load_dashboard_data(str(default_file), file_stat.st_size, file_stat.st_mtime_ns)
+data_source_label = f"Excel：{default_file.name}"
+if feishu_app_id and feishu_app_secret:
+    try:
+        requirements, onboard, interview = load_feishu_dashboard_data(FEISHU_REQUIREMENTS_URL, FEISHU_ONBOARD_URL, feishu_app_id, feishu_app_secret)
+        data_source_label = "飞书多维表格：2026招聘进度表汇总统计表 / 优沃森待入职表"
+    except Exception as exc:
+        st.warning(f"飞书数据读取失败，已自动切回本地 Excel：{exc}")
+        file_stat = default_file.stat()
+        requirements, onboard, interview = load_dashboard_data(str(default_file), file_stat.st_size, file_stat.st_mtime_ns)
+else:
+    file_stat = default_file.stat()
+    requirements, onboard, interview = load_dashboard_data(str(default_file), file_stat.st_size, file_stat.st_mtime_ns)
 request_dates = pd.to_datetime(requirements.get("需求提出日期", pd.Series(dtype="datetime64[ns]")), errors="coerce").dropna()
 onboard_dates = pd.to_datetime(onboard.get("拟入职日期", pd.Series(dtype="datetime64[ns]")), errors="coerce").dropna()
 period_dates = pd.concat([request_dates, onboard_dates], ignore_index=True)
@@ -331,7 +379,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.caption(f"当前数据源：`{default_file.name}`")
+st.caption(f"当前数据源：`{data_source_label}`")
 
 page = st.sidebar.radio("页面", ["招聘进度看板", "组织架构 XMind"], index=0)
 
@@ -379,7 +427,7 @@ active_owner_groups = selected_owner_groups or owner_options
 active_owners = expand_owner_groups(active_owner_groups, source_owners)
 requirements = filter_requirements_by_controls(requirements, start_date, end_date, active_owner_groups, source_owners, selected_project)
 include_undated_onboard = start_date <= default_start and end_date >= default_end
-onboard = filter_onboard_by_controls(onboard, start_date, end_date, active_owner_groups, source_owners, include_undated_onboard)
+onboard = filter_onboard_by_controls(onboard, start_date, end_date, active_owner_groups, source_owners, include_undated_onboard, selected_project)
 metrics = overview_metrics(requirements, onboard)
 owners_df = visible_owner_requirements(requirements, active_owners)
 
