@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 BEIJING_TZ = ZoneInfo("Asia/Shanghai")
 DEFAULT_SHEETS = ["优沃森组织架构", "淘宝闪购组织架构", "优沃森直营店"]
 DEFAULT_CACHE_DIR = Path(os.getenv("XMIND_CACHE_DIR", Path(tempfile.gettempdir()) / "youwosen_xmind_cache"))
-EXPORTER_REVISION = "2026-08-28.1"
+EXPORTER_REVISION = "2026-08-28.2"
 
 
 @dataclass(frozen=True)
@@ -149,7 +149,7 @@ async def _capture_xmind_sheets(share_url: str, sheet_names: list[str]) -> list[
         executable_path = _find_chromium_executable()
         launch_options: dict[str, Any] = {
             "headless": True,
-            "args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
+            "args": ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--lang=zh-CN"],
         }
         if executable_path:
             launch_options["executable_path"] = executable_path
@@ -158,6 +158,7 @@ async def _capture_xmind_sheets(share_url: str, sheet_names: list[str]) -> list[
             page = await browser.new_page(
                 viewport={"width": 2400, "height": 1400},
                 device_scale_factor=1,
+                locale="zh-CN",
                 user_agent=(
                     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36"
