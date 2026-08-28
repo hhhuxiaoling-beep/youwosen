@@ -271,8 +271,8 @@ async def _capture_viewer(page: Any) -> bytes:
         }
         """
     )
-    width = max(800, min(2400, int(clip["width"])))
-    height = max(600, min(1800, int(clip["height"])))
+    width = max(1, min(2400, int(clip["width"])))
+    height = max(1, min(1800, int(clip["height"])))
     return await page.screenshot(
         type="png",
         clip={"x": int(clip["x"]), "y": int(clip["y"]), "width": width, "height": height},
