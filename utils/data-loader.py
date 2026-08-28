@@ -43,7 +43,17 @@ def _read_first_existing_sheet(path: Path, workbook: pd.ExcelFile, sheet_names: 
 
 def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df.columns = [str(col).strip().replace("\u3000", " ") for col in df.columns]
+    df.columns = [re.sub(r"\s+", "", str(col).replace("\u3000", " ")).strip() for col in df.columns]
+    return df
+
+
+def copy_column_if_present(df: pd.DataFrame, target: str, candidates: list[str]) -> pd.DataFrame:
+    if target in df.columns:
+        return df
+    for candidate in candidates:
+        if candidate in df.columns:
+            df[target] = df[candidate]
+            return df
     return df
 
 
@@ -105,7 +115,9 @@ def clean_requirements(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def normalize_onboard_status(value: Any) -> str:
+def normalize_onboard_status(value: Any, unchecked_status: str = "待入职") -> str:
+    if isinstance(value, bool):
+        return "入职" if value else unchecked_status
     if value is None or pd.isna(value):
         return "未填写"
     text = str(value).strip().replace(" ", "")
@@ -115,11 +127,37 @@ def normalize_onboard_status(value: Any) -> str:
         return "放弃入职"
     if any(keyword in text for keyword in ["终止", "取消", "淘汰", "爽约"]):
         return "终止"
-    if text in {"入职", "已入职", "是", "已到岗", "到岗", "在职"} or "已入职" in text:
+    if text in {"入职", "已入职", "是", "已到岗", "到岗", "在职", "true", "True", "TRUE", "1", "✅", "✓", "✔", "☑"} or "已入职" in text:
         return "入职"
-    if text in {"待入职", "未入职", "否", "待到岗", "未到岗"} or "待入职" in text:
+    if text in {"待入职", "未入职", "否", "待到岗", "未到岗", "false", "False", "FALSE", "0", "□", "☐"} or "待入职" in text:
+        return unchecked_status
+    if "延期" in text:
+        return "放弃入职"
+    if "到期" in text or "还有" in text:
         return "待入职"
     return str(value).strip()
+
+
+def distance_based_onboard_status(value: Any) -> str:
+    if value is None or pd.isna(value):
+        return "待入职"
+    text = str(value).strip().replace(" ", "")
+    if not text or text.lower() in {"nan", "none", "null"}:
+        return "待入职"
+    if "已延期" in text or "延期" in text:
+        return "放弃入职"
+    if "还有" in text or "到期" in text:
+        return "待入职"
+    return normalize_onboard_status(value)
+
+
+def derive_onboard_status(row: pd.Series) -> str:
+    distance_status = distance_based_onboard_status(row.get("距离入职日"))
+    raw_status = row.get("入职状态")
+    normalized_status = normalize_onboard_status(raw_status, unchecked_status=distance_status)
+    if normalized_status == "未填写":
+        return distance_status
+    return normalized_status
 
 
 def clean_onboard(df: pd.DataFrame) -> pd.DataFrame:
@@ -151,8 +189,69 @@ def clean_onboard(df: pd.DataFrame) -> pd.DataFrame:
     for source, target in rename_map.items():
         if source in df.columns and target not in df.columns:
             df[target] = df[source]
+    df = copy_column_if_present(
+        df,
+        "入职状态",
+        [
+            "入职状态",
+            "是否已入职",
+            "是否入职",
+            "当前状态",
+            "状态",
+            "入职情况",
+            "到岗状态",
+            "是否到岗",
+            "已入职",
+        ],
+    )
+    df = copy_column_if_present(
+        df,
+        "距离入职日",
+        [
+            "距离入职日",
+            "距离入职时间",
+            "距离到岗日",
+            "距离到岗时间",
+        ],
+    )
+    df = copy_column_if_present(
+        df,
+        "拟入职日期",
+        [
+            "拟入职日期",
+            "入职日期",
+            "预计入职日期",
+            "计划入职日期",
+            "入职时间",
+            "到岗日期",
+            "预计到岗日期",
+            "计划到岗日期",
+        ],
+    )
+    if "入职状态" not in df.columns:
+        status_candidates = [
+            col
+            for col in df.columns
+            if ("入职" in col or "到岗" in col)
+            and any(keyword in col for keyword in ["状态", "是否", "情况"])
+            and not any(keyword in col for keyword in ["日期", "时间", "距离", "用品", "原因"])
+        ]
+        if status_candidates:
+            df["入职状态"] = df[status_candidates[0]]
+    if "拟入职日期" not in df.columns:
+        date_candidates = [
+            col
+            for col in df.columns
+            if ("入职" in col or "到岗" in col)
+            and any(keyword in col for keyword in ["日期", "时间"])
+            and not any(keyword in col for keyword in ["距离", "用品"])
+        ]
+        if date_candidates:
+            df["拟入职日期"] = df[date_candidates[0]]
     if "入职状态" in df.columns:
-        df["入职状态"] = df["入职状态"].apply(normalize_onboard_status)
+        df["入职状态"] = df.apply(derive_onboard_status, axis=1)
+    elif "距离入职日" in df.columns:
+        df["入职状态"] = df["距离入职日"].apply(distance_based_onboard_status)
     for col in ["HR", "候选人姓名", "Base地", "拟定岗位", "汇报对象", "渠道来源", "聘用类型", "入职状态"]:
         if col in df.columns:
             df[col] = df[col].fillna("未填写").astype(str).str.strip()
@@ -229,7 +328,7 @@ def _normalize_feishu_value(value: Any) -> Any:
         normalized = [item for item in normalized if item not in (None, "")]
         return ", ".join(map(str, normalized)) if normalized else None
     if isinstance(value, dict):
-        for key in ("text", "name", "zh_name", "en_name", "value", "email", "link"):
+        for key in ("checked", "text", "name", "zh_name", "en_name", "value", "email", "link"):
             if key in value and value[key] not in (None, ""):
                 return _normalize_feishu_value(value[key])
         return ", ".join(f"{key}:{_normalize_feishu_value(val)}" for key, val in value.items() if val not in (None, ""))
@@ -280,20 +379,35 @@ def _list_feishu_records(link: str, token: str, use_view: bool = False) -> pd.Da
 
 
 def _coerce_possible_feishu_dates(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
-    for col in ["需求提出日期", "需求完成日期", "OFFER时间", "入职日期", "拟入职日期", "预计入职日期", "计划入职日期", "入职时间"]:
+    df = normalize_columns(df)
+    known_date_cols = ["需求提出日期", "需求完成日期", "OFFER时间", "入职日期", "拟入职日期", "预计入职日期", "计划入职日期", "入职时间"]
+    fuzzy_date_cols = [
+        col
+        for col in df.columns
+        if any(keyword in col for keyword in ["日期", "时间"])
+        and not any(keyword in col for keyword in ["距离", "用品"])
+    ]
+    for col in list(dict.fromkeys(known_date_cols + fuzzy_date_cols)):
         if col not in df.columns:
             continue
         numeric_values = pd.to_numeric(df[col], errors="coerce")
-        timestamp_mask = numeric_values.notna() & numeric_values.gt(10_000_000_000)
         parsed = pd.to_datetime(df[col], errors="coerce")
-        if timestamp_mask.any():
+        ms_mask = numeric_values.notna() & numeric_values.ge(1_000_000_000_000)
+        second_mask = numeric_values.notna() & numeric_values.ge(1_000_000_000) & numeric_values.lt(1_000_000_000_000)
+        if ms_mask.any():
             local_dates = (
-                pd.to_datetime(numeric_values.loc[timestamp_mask], unit="ms", utc=True, errors="coerce")
+                pd.to_datetime(numeric_values.loc[ms_mask], unit="ms", utc=True, errors="coerce")
                 .dt.tz_convert(FEISHU_LOCAL_TZ)
                 .dt.tz_localize(None)
             )
-            parsed.loc[timestamp_mask] = local_dates
+            parsed.loc[ms_mask] = local_dates
+        if second_mask.any():
+            local_dates = (
+                pd.to_datetime(numeric_values.loc[second_mask], unit="s", utc=True, errors="coerce")
+                .dt.tz_convert(FEISHU_LOCAL_TZ)
+                .dt.tz_localize(None)
+            )
+            parsed.loc[second_mask] = local_dates
         df[col] = parsed
     return df
 
