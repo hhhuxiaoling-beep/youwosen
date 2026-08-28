@@ -4,6 +4,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, quote, urlparse
 from urllib.request import Request, urlopen
 
@@ -103,8 +104,19 @@ def _request_json(url: str, method: str = "GET", token: str | None = None, paylo
     if token:
         headers["Authorization"] = f"Bearer {token}"
     request = Request(url, data=data, headers=headers, method=method)
-    with urlopen(request, timeout=30) as response:
-        result = json.loads(response.read().decode("utf-8"))
+    try:
+        with urlopen(request, timeout=30) as response:
+            result = json.loads(response.read().decode("utf-8"))
+    except HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        try:
+            detail = json.loads(body)
+            body = f"code={detail.get('code')}, msg={detail.get('msg')}"
+        except json.JSONDecodeError:
+            body = body[:500] if body else "empty response body"
+        raise RuntimeError(f"Feishu HTTP {exc.code} {exc.reason}: {body}") from exc
+    except URLError as exc:
+        raise RuntimeError(f"Feishu request failed: {exc.reason}") from exc
     if result.get("code", 0) != 0:
         raise RuntimeError(f"Feishu API error {result.get('code')}: {result.get('msg')}")
     return result
@@ -134,7 +146,11 @@ def _parse_feishu_link(link: str, token: str) -> dict[str, str | None]:
         app_token = path_parts[1]
     elif len(path_parts) >= 2 and path_parts[0] == "wiki":
         wiki_token = path_parts[1]
-        node = _request_json(f"{FEISHU_API_BASE}/wiki/v2/spaces/get_node?token={quote(wiki_token)}", token=token)
+        quoted_token = quote(wiki_token)
+        try:
+            node = _request_json(f"{FEISHU_API_BASE}/wiki/v2/spaces/get_node?token={quoted_token}&obj_type=wiki", token=token)
+        except RuntimeError:
+            node = _request_json(f"{FEISHU_API_BASE}/wiki/v2/spaces/get_node?token={quoted_token}", token=token)
         app_token = node.get("data", {}).get("node", {}).get("obj_token")
 
     if not app_token:
@@ -165,20 +181,32 @@ def _feishu_records_to_dataframe(records: list[dict[str, Any]]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _list_feishu_records(link: str, token: str) -> pd.DataFrame:
-    info = _parse_feishu_link(link, token)
+def _fetch_feishu_records_page(info: dict[str, str | None], token: str, page_token: str = "", use_view: bool = True) -> dict[str, Any]:
     app_token = quote(str(info["app_token"]), safe="")
     table_id = quote(str(info["table_id"]), safe="")
+    params = ["page_size=100"]
+    if use_view and info["view_id"]:
+        params.append(f"view_id={quote(str(info['view_id']))}")
+    if page_token:
+        params.append(f"page_token={quote(page_token)}")
+    url = f"{FEISHU_API_BASE}/bitable/v1/apps/{app_token}/tables/{table_id}/records?{'&'.join(params)}"
+    return _request_json(url, token=token)
+
+
+def _list_feishu_records(link: str, token: str) -> pd.DataFrame:
+    info = _parse_feishu_link(link, token)
     page_token = ""
     records: list[dict[str, Any]] = []
+    use_view = True
     while True:
-        params = ["page_size=100"]
-        if info["view_id"]:
-            params.append(f"view_id={quote(str(info['view_id']))}")
-        if page_token:
-            params.append(f"page_token={quote(page_token)}")
-        url = f"{FEISHU_API_BASE}/bitable/v1/apps/{app_token}/tables/{table_id}/records?{'&'.join(params)}"
-        result = _request_json(url, token=token)
+        try:
+            result = _fetch_feishu_records_page(info, token, page_token, use_view)
+        except RuntimeError as exc:
+            if info["view_id"] and use_view and not page_token:
+                use_view = False
+                result = _fetch_feishu_records_page(info, token, page_token, use_view)
+            else:
+                raise exc
         data = result.get("data", {})
         records.extend(data.get("items", []))
         if not data.get("has_more"):
