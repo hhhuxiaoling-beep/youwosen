@@ -369,16 +369,29 @@ def section_secret(section_path: tuple[str, ...], section_key: str) -> str:
         return ""
 
 
-def secret_pair(app_id_keys: tuple[str, ...], app_secret_keys: tuple[str, ...], sections: tuple[tuple[str, ...], ...]) -> tuple[str, str]:
+def secret_pair(
+    app_id_keys: tuple[str, ...],
+    app_secret_keys: tuple[str, ...],
+    sections: tuple[tuple[str, ...], ...],
+    fallback_app_id_keys: tuple[str, ...] = (),
+    fallback_app_secret_keys: tuple[str, ...] = (),
+    fallback_sections: tuple[tuple[str, ...], ...] = (),
+) -> tuple[str, str]:
     for section in sections:
         app_id = section_secret(section, "app_id")
         app_secret = section_secret(section, "app_secret")
         if app_id and app_secret:
             return app_id, app_secret
-    return (
-        secret_value(*app_id_keys),
-        secret_value(*app_secret_keys),
-    )
+    app_id = secret_value(*app_id_keys)
+    app_secret = secret_value(*app_secret_keys)
+    if app_id and app_secret:
+        return app_id, app_secret
+    for section in fallback_sections:
+        app_id = section_secret(section, "app_id")
+        app_secret = section_secret(section, "app_secret")
+        if app_id and app_secret:
+            return app_id, app_secret
+    return secret_value(*fallback_app_id_keys), secret_value(*fallback_app_secret_keys)
 
 
 requirements_app_id, requirements_app_secret = secret_pair(
@@ -389,7 +402,6 @@ requirements_app_id, requirements_app_secret = secret_pair(
         "FEISHU_APP_ID_REQUIREMENTS",
         "FEISHU_APP_ID_DEMAND",
         "FEISHU_APP_ID_1",
-        "FEISHU_APP_ID",
     ),
     (
         "FEISHU_REQUIREMENTS_APP_SECRET",
@@ -398,9 +410,11 @@ requirements_app_id, requirements_app_secret = secret_pair(
         "FEISHU_APP_SECRET_REQUIREMENTS",
         "FEISHU_APP_SECRET_DEMAND",
         "FEISHU_APP_SECRET_1",
-        "FEISHU_APP_SECRET",
     ),
-    (("feishu_requirements",), ("feishu_requirement",), ("feishu_demand",), ("feishu", "requirements"), ("feishu", "demand"), ("feishu",)),
+    (("feishu_requirements",), ("feishu_requirement",), ("feishu_demand",), ("feishu", "requirements"), ("feishu", "demand")),
+    ("FEISHU_APP_ID",),
+    ("FEISHU_APP_SECRET",),
+    (("feishu",),),
 )
 onboard_app_id, onboard_app_secret = secret_pair(
     (
@@ -411,7 +425,6 @@ onboard_app_id, onboard_app_secret = secret_pair(
         "FEISHU_APP_ID_ONBOARDING",
         "FEISHU_APP_ID_ENTRY",
         "FEISHU_APP_ID_2",
-        "FEISHU_APP_ID",
     ),
     (
         "FEISHU_ONBOARD_APP_SECRET",
@@ -421,9 +434,11 @@ onboard_app_id, onboard_app_secret = secret_pair(
         "FEISHU_APP_SECRET_ONBOARDING",
         "FEISHU_APP_SECRET_ENTRY",
         "FEISHU_APP_SECRET_2",
-        "FEISHU_APP_SECRET",
     ),
-    (("feishu_onboard",), ("feishu_onboarding",), ("feishu_entry",), ("feishu", "onboard"), ("feishu", "onboarding"), ("feishu", "entry"), ("feishu",)),
+    (("feishu_onboard",), ("feishu_onboarding",), ("feishu_entry",), ("feishu", "onboard"), ("feishu", "onboarding"), ("feishu", "entry")),
+    ("FEISHU_APP_ID",),
+    ("FEISHU_APP_SECRET",),
+    (("feishu",),),
 )
 default_file = data_loader.find_default_data_file(DATA_DIR)
 data_source_label = f"Excel：{default_file.name}"
