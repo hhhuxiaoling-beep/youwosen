@@ -16,6 +16,7 @@ SHEET_ONBOARD = "待入职表-优沃森"
 SHEET_ONBOARD_CANDIDATES = ["待入职表-优沃森", "优沃森待入职表"]
 SHEET_INTERVIEW_CANDIDATES = ["面试记录表-优沃森", "面试记录表"]
 FEISHU_API_BASE = "https://open.feishu.cn/open-apis"
+FEISHU_LOCAL_TZ = "Asia/Shanghai"
 
 
 def _date_score(path: Path) -> tuple[int, int, str]:
@@ -40,6 +41,12 @@ def _read_first_existing_sheet(path: Path, workbook: pd.ExcelFile, sheet_names: 
     return pd.DataFrame()
 
 
+def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    df.columns = [str(col).strip().replace("\u3000", " ") for col in df.columns]
+    return df
+
+
 def read_workbook(path: Path) -> dict[str, pd.DataFrame]:
     workbook = pd.ExcelFile(path)
     return {
@@ -50,7 +57,30 @@ def read_workbook(path: Path) -> dict[str, pd.DataFrame]:
 
 
 def clean_requirements(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
+    df = normalize_columns(df)
+    rename_map = {
+        "Base": "Base地",
+        "base": "Base地",
+        "城市": "Base地",
+        "需求人数": "需求数量",
+        "招聘人数": "需求数量",
+        "HC": "需求数量",
+        "已/待入职人数": "（待）入职人数",
+        "已待入职人数": "（待）入职人数",
+        "已入职+待入职": "（待）入职人数",
+        "待招人数": "剩余待招",
+        "缺口人数": "剩余待招",
+        "招聘进度": "招聘状态",
+        "状态": "招聘状态",
+        "优先级": "招聘优先级",
+        "岗位优先级": "招聘优先级",
+        "简历推荐数": "推荐简历数",
+        "推荐数量": "推荐简历数",
+        "推荐人数": "推荐简历数",
+    }
+    for source, target in rename_map.items():
+        if source in df.columns and target not in df.columns:
+            df[target] = df[source]
     numeric_cols = [
         "招聘优先级",
         "需求数量",
@@ -68,31 +98,64 @@ def clean_requirements(df: pd.DataFrame) -> pd.DataFrame:
             df[col] = df[col].fillna(0)
     for col in ["项目", "业务负责人", "招聘负责人", "岗位", "Base地", "招聘状态", "阶段", "备注"]:
         if col in df.columns:
-            df[col] = df[col].fillna("未填写").astype(str)
+            df[col] = df[col].fillna("未填写").astype(str).str.strip()
     for col in ["需求提出日期", "需求完成日期"]:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce")
     return df
 
 
+def normalize_onboard_status(value: Any) -> str:
+    if value is None or pd.isna(value):
+        return "未填写"
+    text = str(value).strip().replace(" ", "")
+    if not text or text.lower() in {"nan", "none", "null"}:
+        return "未填写"
+    if "放弃" in text:
+        return "放弃入职"
+    if any(keyword in text for keyword in ["终止", "取消", "淘汰", "爽约"]):
+        return "终止"
+    if text in {"入职", "已入职", "是", "已到岗", "到岗", "在职"} or "已入职" in text:
+        return "入职"
+    if text in {"待入职", "未入职", "否", "待到岗", "未到岗"} or "待入职" in text:
+        return "待入职"
+    return str(value).strip()
+
+
 def clean_onboard(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
+    df = normalize_columns(df)
     rename_map = {
         "人员姓名": "候选人姓名",
+        "姓名": "候选人姓名",
+        "候选人": "候选人姓名",
         "办公地点": "Base地",
+        "Base": "Base地",
+        "base": "Base地",
+        "城市": "Base地",
         "岗位名称": "拟定岗位",
+        "岗位": "拟定岗位",
+        "入职岗位": "拟定岗位",
+        "职位名称": "拟定岗位",
         "招聘渠道": "渠道来源",
         "用工类型": "聘用类型",
         "是否已入职": "入职状态",
+        "是否入职": "入职状态",
+        "当前状态": "入职状态",
+        "状态": "入职状态",
         "入职日期": "拟入职日期",
+        "预计入职日期": "拟入职日期",
+        "计划入职日期": "拟入职日期",
+        "入职时间": "拟入职日期",
         "招聘负责人": "HR",
     }
     for source, target in rename_map.items():
         if source in df.columns and target not in df.columns:
             df[target] = df[source]
+    if "入职状态" in df.columns:
+        df["入职状态"] = df["入职状态"].apply(normalize_onboard_status)
     for col in ["HR", "候选人姓名", "Base地", "拟定岗位", "汇报对象", "渠道来源", "聘用类型", "入职状态"]:
         if col in df.columns:
-            df[col] = df[col].fillna("未填写").astype(str)
+            df[col] = df[col].fillna("未填写").astype(str).str.strip()
     if "拟入职日期" in df.columns:
         df["拟入职日期"] = pd.to_datetime(df["拟入职日期"], errors="coerce")
     return df
@@ -181,7 +244,7 @@ def _feishu_records_to_dataframe(records: list[dict[str, Any]]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _fetch_feishu_records_page(info: dict[str, str | None], token: str, page_token: str = "", use_view: bool = True) -> dict[str, Any]:
+def _fetch_feishu_records_page(info: dict[str, str | None], token: str, page_token: str = "", use_view: bool = False) -> dict[str, Any]:
     app_token = quote(str(info["app_token"]), safe="")
     table_id = quote(str(info["table_id"]), safe="")
     params = ["page_size=100"]
@@ -193,11 +256,10 @@ def _fetch_feishu_records_page(info: dict[str, str | None], token: str, page_tok
     return _request_json(url, token=token)
 
 
-def _list_feishu_records(link: str, token: str) -> pd.DataFrame:
+def _list_feishu_records(link: str, token: str, use_view: bool = False) -> pd.DataFrame:
     info = _parse_feishu_link(link, token)
     page_token = ""
     records: list[dict[str, Any]] = []
-    use_view = True
     while True:
         try:
             result = _fetch_feishu_records_page(info, token, page_token, use_view)
@@ -219,14 +281,19 @@ def _list_feishu_records(link: str, token: str) -> pd.DataFrame:
 
 def _coerce_possible_feishu_dates(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    for col in ["需求提出日期", "需求完成日期", "OFFER时间", "入职日期", "拟入职日期"]:
+    for col in ["需求提出日期", "需求完成日期", "OFFER时间", "入职日期", "拟入职日期", "预计入职日期", "计划入职日期", "入职时间"]:
         if col not in df.columns:
             continue
         numeric_values = pd.to_numeric(df[col], errors="coerce")
         timestamp_mask = numeric_values.notna() & numeric_values.gt(10_000_000_000)
         parsed = pd.to_datetime(df[col], errors="coerce")
         if timestamp_mask.any():
-            parsed.loc[timestamp_mask] = pd.to_datetime(numeric_values.loc[timestamp_mask], unit="ms", errors="coerce")
+            local_dates = (
+                pd.to_datetime(numeric_values.loc[timestamp_mask], unit="ms", utc=True, errors="coerce")
+                .dt.tz_convert(FEISHU_LOCAL_TZ)
+                .dt.tz_localize(None)
+            )
+            parsed.loc[timestamp_mask] = local_dates
         df[col] = parsed
     return df
 
