@@ -238,7 +238,7 @@ async def _click_sheet_if_visible(page: Any, sheet_name: str) -> bool:
         f"[aria-label*='{sheet_name}']",
     ]
     for selector in selectors:
-        locator = page.locator(selector).last()
+        locator = page.locator(selector).last
         try:
             if await locator.count() and await locator.is_visible():
                 await locator.click(force=True)
