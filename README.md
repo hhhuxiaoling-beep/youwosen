@@ -8,7 +8,6 @@
 - `data/`: Excel 兜底数据源文件夹，默认自动读取文件名日期最新的 `.xlsx`
 - `utils/data-loader.py`: 飞书 / Excel 数据读取与清洗
 - `utils/metrics.py`: 指标计算与排序逻辑
-- `utils/xmind_exporter.py`: 在线 XMind 组织架构图截图与缓存
 - `requirements.txt`: Streamlit Cloud 部署依赖
 
 ## 本地运行
@@ -47,7 +46,7 @@ app_secret = "xxx"
 
 - 数据总览：招聘需求、入职、待招、P0 岗位、负责人进度等可视化看板
 - 招聘过程管理：岗位管理、按岗位上传简历、候选人流程看板、候选人台账维护
-- 组织架构：从在线 XMind 分享链接生成 PNG，支持手动更新、北京时间更新时间、缩放与全屏查看
+- 组织架构：保留在线 XMind 原图入口，便于查看和编辑最新组织架构
 
 ## 数据口径
 
