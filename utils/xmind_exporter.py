@@ -4,6 +4,8 @@ import asyncio
 import json
 import os
 import re
+import subprocess
+import sys
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -15,7 +17,7 @@ from zoneinfo import ZoneInfo
 BEIJING_TZ = ZoneInfo("Asia/Shanghai")
 DEFAULT_SHEETS = ["优沃森组织架构", "淘宝闪购组织架构", "优沃森直营店"]
 DEFAULT_CACHE_DIR = Path(os.getenv("XMIND_CACHE_DIR", Path(tempfile.gettempdir()) / "youwosen_xmind_cache"))
-EXPORTER_REVISION = "2026-08-28.2"
+EXPORTER_REVISION = "2026-09-09.1"
 
 
 @dataclass(frozen=True)
@@ -81,6 +83,8 @@ def list_cached_images(cache_dir: Path = DEFAULT_CACHE_DIR) -> list[XmindImage]:
 
 def cache_is_fresh(cache_dir: Path = DEFAULT_CACHE_DIR, ttl_hours: int = 24) -> bool:
     metadata = _read_metadata(cache_dir)
+    if metadata.get("exporter_revision") != EXPORTER_REVISION:
+        return False
     updated_at = metadata.get("updated_at")
     if not updated_at:
         return False
@@ -116,6 +120,7 @@ def refresh_xmind_images(share_url: str, cache_dir: Path = DEFAULT_CACHE_DIR, sh
         cache_dir,
         {
             "source_url": share_url,
+            "exporter_revision": EXPORTER_REVISION,
             "updated_at": updated_at.isoformat(),
             "images": metadata_images,
         },
@@ -139,6 +144,20 @@ def _find_chromium_executable() -> str | None:
     return None
 
 
+def _install_playwright_chromium() -> None:
+    command = [sys.executable, "-m", "playwright", "install", "chromium"]
+    try:
+        subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=180)
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError("自动安装 Playwright Chromium 超时，请稍后重试") from exc
+    except subprocess.CalledProcessError as exc:
+        detail = (exc.stderr or exc.stdout or "").strip()
+        message = "自动安装 Playwright Chromium 失败"
+        if detail:
+            message = f"{message}：{detail[-500:]}"
+        raise RuntimeError(message) from exc
+
+
 async def _capture_xmind_sheets(share_url: str, sheet_names: list[str]) -> list[dict[str, Any]]:
     try:
         from playwright.async_api import async_playwright
@@ -153,7 +172,13 @@ async def _capture_xmind_sheets(share_url: str, sheet_names: list[str]) -> list[
         }
         if executable_path:
             launch_options["executable_path"] = executable_path
-        browser = await playwright.chromium.launch(**launch_options)
+        try:
+            browser = await playwright.chromium.launch(**launch_options)
+        except Exception:
+            if executable_path:
+                raise
+            await asyncio.to_thread(_install_playwright_chromium)
+            browser = await playwright.chromium.launch(**launch_options)
         try:
             page = await browser.new_page(
                 viewport={"width": 2400, "height": 1400},
@@ -164,10 +189,13 @@ async def _capture_xmind_sheets(share_url: str, sheet_names: list[str]) -> list[
                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36"
                 ),
             )
+            await _install_cjk_webfont(page)
             page.set_default_timeout(30_000)
             await page.goto(share_url, wait_until="domcontentloaded", timeout=90_000)
+            await _wait_for_cjk_webfont(page)
             await _wait_for_xmind_canvas(page)
             await _prepare_xmind_view(page)
+            await _wait_for_cjk_webfont(page)
 
             captures = []
             clicked_any_sheet = False
@@ -184,6 +212,51 @@ async def _capture_xmind_sheets(share_url: str, sheet_names: list[str]) -> list[
             return captures
         finally:
             await browser.close()
+
+
+async def _install_cjk_webfont(page: Any) -> None:
+    await page.add_init_script(
+        """
+        (() => {
+          const css = `
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;800&display=swap');
+            html, body, body *, svg text {
+              font-family: "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", Arial, sans-serif !important;
+            }
+          `;
+          const addStyle = () => {
+            if (document.getElementById('codex-cjk-font')) return;
+            const style = document.createElement('style');
+            style.id = 'codex-cjk-font';
+            style.textContent = css;
+            (document.head || document.documentElement).appendChild(style);
+          };
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', addStyle, { once: true });
+          } else {
+            addStyle();
+          }
+        })();
+        """
+    )
+
+
+async def _wait_for_cjk_webfont(page: Any) -> None:
+    try:
+        await page.evaluate(
+            """
+            async () => {
+              if (!document.fonts) return;
+              try {
+                await document.fonts.load('700 16px "Noto Sans SC"');
+                await document.fonts.ready;
+              } catch (error) {}
+            }
+            """
+        )
+        await page.wait_for_timeout(1_000)
+    except Exception:
+        pass
 
 
 async def _wait_for_xmind_canvas(page: Any) -> None:
