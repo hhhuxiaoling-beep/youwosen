@@ -1,3 +1,0 @@
-chromium
-fonts-noto-cjk
-fonts-wqy-zenhei
