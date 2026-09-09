@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import base64
-import html
 import importlib.util
 import os
 from datetime import date, datetime, timedelta
@@ -11,7 +9,6 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import streamlit.components.v1 as components
 
 from utils.metrics import (
     BUSINESS_OWNERS,
@@ -22,7 +19,6 @@ from utils.metrics import (
     running_priority,
     status_summary,
 )
-from utils import xmind_exporter
 
 
 ROOT = Path(__file__).parent
@@ -30,7 +26,6 @@ DATA_DIR = ROOT / "data"
 FEISHU_REQUIREMENTS_URL = "https://mf02fgn9ss.feishu.cn/base/QhMGb6r0OaSwCXsjCcscotvSnl4?table=tblpDsiprOLAZhP6&view=vewM60kcII"
 FEISHU_ONBOARD_URL = "https://hcncxio17i0e.feishu.cn/wiki/G2awwEeASiJCfPkRXxGcdxpcncf?table=tblo2OpZA4Omhr5c&view=vewM1Y9Vem"
 XMIND_SHARE_URL = "https://app.xmind.cn/share/41hH9ZGj"
-XMIND_SHEETS = ["优沃森组织架构", "淘宝闪购组织架构", "优沃森直营店"]
 BEIJING_TZ = ZoneInfo("Asia/Shanghai")
 OWNER_DISPLAY_ORDER = ["吴双双", "张蓉蓉", "郭周洲", "其他", "巢育敏", "刘新风"]
 NAMED_OWNER_GROUPS = [owner for owner in OWNER_DISPLAY_ORDER if owner != "其他"]
@@ -154,19 +149,6 @@ st.markdown(
         color: white !important;
         text-decoration: none;
         font-weight: 700;
-    }
-    .xmind-image-frame {
-        border: 1px solid #d9e4ef;
-        border-radius: 10px;
-        background: #fff;
-        padding: 12px;
-        overflow-x: auto;
-    }
-    .xmind-image-frame img {
-        display: block;
-        width: 100%;
-        min-width: 980px;
-        height: auto;
     }
     </style>
     """,
@@ -304,129 +286,6 @@ def render_onboard_table(df: pd.DataFrame, empty_text: str) -> None:
     display["拟入职日期"] = pd.to_datetime(display["拟入职日期"], errors="coerce").dt.strftime("%Y-%m-%d").fillna("未定")
     display = display.rename(columns={"拟定岗位": "岗位", "候选人姓名": "候选人", "拟入职日期": "入职时间", "渠道来源": "渠道"})
     st.dataframe(display, use_container_width=True, hide_index=True)
-
-
-def render_zoomable_image(image_bytes: bytes, title: str, height: int = 720) -> None:
-    image_data = base64.b64encode(image_bytes).decode("ascii")
-    safe_title = html.escape(title)
-    component_html = f"""
-    <!doctype html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <style>
-        body {{
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-          background: #fffdf8;
-        }}
-        .toolbar {{
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          padding: 8px 10px;
-          position: sticky;
-          top: 0;
-          z-index: 2;
-          background: rgba(255, 253, 248, .94);
-          border-bottom: 1px solid #d9e4ef;
-        }}
-        .toolbar button {{
-          border: 1px solid #d9e4ef;
-          border-radius: 6px;
-          background: #1c2430;
-          color: #fff;
-          font-size: 13px;
-          font-weight: 700;
-          padding: 7px 10px;
-          cursor: pointer;
-        }}
-        .stage {{
-          height: {height - 50}px;
-          overflow: auto;
-          border: 1px solid #d9e4ef;
-          border-radius: 10px;
-          background: #fff;
-          display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          padding: 18px;
-        }}
-        .stage:fullscreen {{
-          height: 100vh;
-          border-radius: 0;
-          padding: 24px;
-          background: #fff;
-        }}
-        .stage img {{
-          max-width: none;
-          width: 100%;
-          min-width: 980px;
-          height: auto;
-          transform-origin: top center;
-          transition: transform .16s ease;
-          cursor: zoom-in;
-          user-select: none;
-        }}
-      </style>
-    </head>
-    <body>
-      <div class="toolbar" aria-label="{safe_title}">
-        <button type="button" id="zoomIn">放大</button>
-        <button type="button" id="zoomOut">缩小</button>
-        <button type="button" id="reset">重置</button>
-        <button type="button" id="full">全屏</button>
-      </div>
-      <div class="stage" id="stage">
-        <img id="chart" src="data:image/png;base64,{image_data}" alt="{safe_title}">
-      </div>
-      <script>
-        const stage = document.getElementById('stage');
-        const chart = document.getElementById('chart');
-        let scale = 1;
-        function applyScale() {{
-          chart.style.transform = `scale(${{scale}})`;
-          chart.style.marginBottom = `${{Math.max(0, (scale - 1) * chart.clientHeight)}}px`;
-        }}
-        document.getElementById('zoomIn').onclick = () => {{
-          scale = Math.min(3, +(scale + 0.2).toFixed(2));
-          applyScale();
-        }};
-        document.getElementById('zoomOut').onclick = () => {{
-          scale = Math.max(0.5, +(scale - 0.2).toFixed(2));
-          applyScale();
-        }};
-        document.getElementById('reset').onclick = () => {{
-          scale = 1;
-          stage.scrollTo({{top: 0, left: 0}});
-          applyScale();
-        }};
-        document.getElementById('full').onclick = () => {{
-          if (document.fullscreenElement) {{
-            document.exitFullscreen();
-          }} else {{
-            stage.requestFullscreen();
-          }}
-        }};
-        chart.onclick = () => document.getElementById('full').click();
-      </script>
-    </body>
-    </html>
-    """
-    components.html(component_html, height=height, scrolling=False)
-
-
-def render_xmind_images(images: list[xmind_exporter.XmindImage]) -> None:
-    if not images:
-        st.warning("暂无组织架构图片，请点击更新生成")
-        return
-    if len(images) == 1:
-        render_zoomable_image(images[0].image_path.read_bytes(), images[0].sheet_name)
-        return
-    tabs = st.tabs([image.sheet_name for image in images])
-    for tab, image in zip(tabs, images):
-        with tab:
-            render_zoomable_image(image.image_path.read_bytes(), image.sheet_name)
 
 
 @st.cache_data(show_spinner=False)
@@ -612,25 +471,7 @@ page = st.sidebar.radio("页面", ["招聘进度看板", "组织架构 XMind"], 
 if page == "组织架构 XMind":
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.subheader("优沃森&淘宝闪购组织架构")
-    action_open, action_refresh, action_time = st.columns([0.95, 0.55, 2.5])
-    with action_open:
-        st.markdown(f'<a class="xmind-link" href="{XMIND_SHARE_URL}" target="_blank">打开 XMind 原图</a>', unsafe_allow_html=True)
-    with action_refresh:
-        refresh_clicked = st.button("更新", type="primary")
-    time_placeholder = action_time.empty()
-
-    cached_images = xmind_exporter.list_cached_images()
-    needs_auto_refresh = not cached_images or not xmind_exporter.cache_is_fresh()
-    if refresh_clicked or needs_auto_refresh:
-        with st.spinner("正在从在线 XMind 同步组织架构图片"):
-            try:
-                cached_images = xmind_exporter.refresh_xmind_images(XMIND_SHARE_URL, sheet_names=XMIND_SHEETS)
-                st.success("组织架构图片已更新")
-            except Exception as exc:
-                st.error(f"在线 XMind 图片更新失败：{exc}")
-                cached_images = xmind_exporter.list_cached_images()
-    time_placeholder.caption(f"更新时间（北京时间）：`{xmind_exporter.last_updated_text()}`")
-    render_xmind_images(cached_images)
+    st.markdown(f'<a class="xmind-link" href="{XMIND_SHARE_URL}" target="_blank">打开 XMind 原图</a>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
