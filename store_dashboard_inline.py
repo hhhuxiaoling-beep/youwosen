@@ -14,12 +14,12 @@ WEEKLY_TOTALS = {
 }
 
 STORES = [
-    {"name": "康桥店", "staff": 3, "labor": 1354, "registered": 7, "grade": "黄金", "score916": 47.7, "score": 55.5, "display916": 4.0, "display": 4.2, "judgment": "增长与高负荷并存，优先保障履约承接。", "risk": "商品评价分16.9、商品负反馈率17.5、缺货退款率36.6，订单高负荷下商品体验风险最突出。", "action": "先保履约承接，同时专项治理缺货退款、商品评价和负反馈，避免高单量拉低评分。"},
-    {"name": "广丰路店", "staff": 4, "labor": 1274, "registered": 5, "grade": "黄金", "score916": 70.5, "score": 72.7, "display916": 4.5, "display": 4.5, "judgment": "负荷偏低且订单下滑，单均人工成本最高。", "risk": "配送准时率10.3、配送时效24.1仍是主要短板，评分提升主要来自IM与商品评价改善。", "action": "低负荷先查经营，同时把配送准时和时效纳入店长周复盘。"},
-    {"name": "皮革城店", "staff": 4, "labor": 1098, "registered": 5, "grade": "钻石", "score916": 81.0, "score": 80.2, "display916": 4.7, "display": 4.7, "judgment": "负荷持续偏低，先查经营需求与排班。", "risk": "仍为钻石店，但配送时效44.6、商品负反馈65.7下降，需防止优势回落。", "action": "保持商品评价改善成果，重点盯配送时效和负反馈。"},
-    {"name": "青浦店", "staff": 3, "labor": 989, "registered": 4, "grade": "黄金", "score916": 49.0, "score": 51.3, "display916": 4.0, "display": 4.1, "judgment": "近期增长明显，按最新负荷判断配置。", "risk": "商责介入率32.5、商品负反馈25.4、商品评价46.4偏低，增长期服务质量仍不稳。", "action": "维持增长观察，同时复盘商品与客诉责任原因，避免单量增长放大差评。"},
-    {"name": "七宝店", "staff": 4, "labor": 1430, "registered": 5, "grade": "黄金", "score916": 58.4, "score": 62.3, "display916": 4.2, "display": 4.3, "judgment": "人效接近基准，订单回落应优先查因。", "risk": "商品负反馈25.6、IM回复74.4、商品评价58.7仍需改善，订单回落与评分短板需一起看。", "action": "先查订单回落原因，同时补强IM响应和商品反馈治理。"},
-    {"name": "东站店", "staff": 3, "labor": 887, "registered": 4, "grade": "黄金", "score916": 50.3, "score": 58.7, "display916": 4.1, "display": 4.2, "judgment": "人效接近基准，重点跟进订单下降。", "risk": "提升最大，但商品评价24.1、配送时效25.7、商责介入率34.5仍低。", "action": "继续恢复单量，专项跟进商品评价、配送时效和商责介入。"},
+    {"name": "康桥店", "staff": 3, "labor": 1354, "registered": 7, "grade": "黄金", "score916": 47.7, "score": 55.5, "display916": 4.0, "display": 4.2, "judgment": "增长与高负荷并存，优先保障履约承接。", "risk": "商品评价分16.9、商品负反馈率17.5、缺货退款率36.6，订单高负荷下商品体验风险最突出。", "action": "先保履约承接，同时专项治理缺货退款、商品评价和负反馈，避免高单量拉低评分。", "schedule": "白班4人、夜班2-3人滚动；优先覆盖10:00-22:00高峰", "staffing_note": "当前3人口径明显不足，24小时承接需要补足在册并做高峰倾斜。"},
+    {"name": "广丰路店", "staff": 4, "labor": 1274, "registered": 5, "grade": "黄金", "score916": 70.5, "score": 72.7, "display916": 4.5, "display": 4.5, "judgment": "负荷偏低且订单下滑，单均人工成本最高。", "risk": "配送准时率10.3、配送时效24.1仍是主要短板，评分提升主要来自IM与商品评价改善。", "action": "低负荷先查经营，同时把配送准时和时效纳入店长周复盘。", "schedule": "白班3人、夜班1-2人滚动；低峰不堆人", "staffing_note": "先稳5人在册，重点优化时段覆盖和订单获取，不建议盲目加人。"},
+    {"name": "皮革城店", "staff": 4, "labor": 1098, "registered": 5, "grade": "钻石", "score916": 81.0, "score": 80.2, "display916": 4.7, "display": 4.7, "judgment": "负荷持续偏低，先查经营需求与排班。", "risk": "仍为钻石店，但配送时效44.6、商品负反馈65.7下降，需防止优势回落。", "action": "保持商品评价改善成果，重点盯配送时效和负反馈。", "schedule": "白班3人、夜班1-2人滚动；以服务稳定为主", "staffing_note": "5人在册足够覆盖24小时，重点是防止评分优势回落。"},
+    {"name": "青浦店", "staff": 3, "labor": 989, "registered": 4, "grade": "黄金", "score916": 49.0, "score": 51.3, "display916": 4.0, "display": 4.1, "judgment": "近期增长明显，按最新负荷判断配置。", "risk": "商责介入率32.5、商品负反馈25.4、商品评价46.4偏低，增长期服务质量仍不稳。", "action": "维持增长观察，同时复盘商品与客诉责任原因，避免单量增长放大差评。", "schedule": "白班2人、夜班1-2人滚动；增长期预留替补", "staffing_note": "4人在册可覆盖基础24小时，若延续增长需准备第5人弹性池。"},
+    {"name": "七宝店", "staff": 4, "labor": 1430, "registered": 5, "grade": "黄金", "score916": 58.4, "score": 62.3, "display916": 4.2, "display": 4.3, "judgment": "人效接近基准，订单回落应优先查因。", "risk": "商品负反馈25.6、IM回复74.4、商品评价58.7仍需改善，订单回落与评分短板需一起看。", "action": "先查订单回落原因，同时补强IM响应和商品反馈治理。", "schedule": "白班3人、夜班1-2人滚动；随订单回落动态压低低峰", "staffing_note": "5人在册可支撑24小时，经营端先查订单回落，排班避免低峰冗余。"},
+    {"name": "东站店", "staff": 3, "labor": 887, "registered": 4, "grade": "黄金", "score916": 50.3, "score": 58.7, "display916": 4.1, "display": 4.2, "judgment": "人效接近基准，重点跟进订单下降。", "risk": "提升最大，但商品评价24.1、配送时效25.7、商责介入率34.5仍低。", "action": "继续恢复单量，专项跟进商品评价、配送时效和商责介入。", "schedule": "白班2人、夜班1-2人滚动；保留一人跨峰补位", "staffing_note": "4人在册可覆盖基础排班，重点恢复单量和低分项。"},
 ]
 
 WEEKLY = {
@@ -97,7 +97,7 @@ def render_store_dashboard_inline() -> None:
     )
 
     st.markdown('<div class="eyebrow">优沃森直营店</div><h1 class="dash-title">门店数据可视化看板</h1><div class="sub">统计期：2026/9/14—9/19；环比对比：2026/9/7—9/12；评分已补充9.16与9.22两期。</div>', unsafe_allow_html=True)
-    st.caption("数据版本：2026-09-22 rating-v5；已修复 HTML 代码外露；含门店等级、综合体验分、客户端展示评分及 9.16→9.22 变化。")
+    st.caption("数据版本：2026-09-22 rating-v6；恢复人效与经营对比、24小时排班建议、单店问题风险建议。")
 
     _, selector_col = st.columns([3, 1])
     with selector_col:
@@ -130,7 +130,8 @@ def render_store_dashboard_inline() -> None:
     rows = []
     for store in active_stores:
         daily, per, wow = WEEKLY[store["name"]][period]
-        rows.append({**store, "period_daily": daily, "period_per": per, "period_wow": wow, "load": per / STANDARD, "labor_per": store["labor"] / daily})
+        load = per / STANDARD
+        rows.append({**store, "period_daily": daily, "period_per": per, "period_wow": wow, "load": load, "labor_per": store["labor"] / daily})
 
     table_body = "".join(core_row(row) for row in rows)
     table_html = (
@@ -150,8 +151,41 @@ def render_store_dashboard_inline() -> None:
     st.dataframe(score_df, use_container_width=True, hide_index=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
+    st.markdown('<div class="panel"><div class="eyebrow">人效与经营对比</div><h2>按150单/人/天判断门店负荷与经营动作</h2>', unsafe_allow_html=True)
+    efficiency_df = pd.DataFrame([
+        {
+            "门店": row["name"],
+            "日均单量": round(row["period_daily"], 1),
+            "人均单量": round(row["period_per"], 1),
+            "负荷率": pct(row["load"]),
+            "周环比": signed_pct(row["period_wow"]),
+            "单均人工": round(row["labor_per"], 2),
+            "人效判断": row["judgment"],
+            "经营风险": row["risk"],
+            "调整建议": row["action"],
+        }
+        for row in rows
+    ])
+    st.dataframe(efficiency_df, use_container_width=True, hide_index=True)
+    st.markdown('<p class="section-note">判断口径：150单/人/天为正常工作量；高于115%视为高负荷，需要优先保履约与补班；低于85%视为低负荷，应优先排查订单、商品、配送和时段覆盖，而不是简单加人。</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="panel"><div class="eyebrow">24小时运营排班建议</div><h2>12小时班制、月休2天的在册配置与排班</h2>', unsafe_allow_html=True)
+    schedule_df = pd.DataFrame([
+        {
+            "门店": row["name"],
+            "当前人数口径": row["staff"],
+            "24h在册建议": row["registered"],
+            "日均可排班次": round(row["registered"] * 28 / 30, 1),
+            "建议排班": row["schedule"],
+            "配置判断": row["staffing_note"],
+        }
+        for row in rows
+    ])
+    st.dataframe(schedule_df, use_container_width=True, hide_index=True)
+    st.markdown('<p class="section-note">排班口径：24小时营业拆成2个12小时班，拣货员每月出勤28天；在册人数用于覆盖月休、替班和高峰波动。康桥按3个拣货员口径计算，因此当前人效会显著偏高。</p></div>', unsafe_allow_html=True)
+
     signals = [
-        ("先保康桥承接", "康桥人均272.2单，负荷181.5%，低单均人工不代表可长期维持当前压力。"),
+        ("先保康桥承接", "康桥人均272.2单，负荷181.5%，当前是高风险高人效，优先补足在册并向高峰时段倾斜。"),
         ("低负荷先查原因", "广丰路、皮革城低于85%负荷，先核查订单来源、缺货取消、时段覆盖和排班匹配。"),
         ("评分纳入周复盘", "9.22六店平均63.5分，较9.16提升4.0分；短板集中在商品体验与配送履约。"),
         ("增长与回落并存", "青浦、康桥增长明显；七宝、广丰路、东站回落，需要分店拆解原因。"),
@@ -162,6 +196,6 @@ def render_store_dashboard_inline() -> None:
             st.markdown(f'<div class="signal"><b>{title}</b><p>{body}</p></div>', unsafe_allow_html=True)
 
     st.markdown('<div class="panel"><div class="eyebrow">单店详情</div><h2>当前问题、风险与后续调整建议</h2>', unsafe_allow_html=True)
-    detail = pd.DataFrame([{"门店": store["name"], "核心判断": store["judgment"], "评分/经营风险": store["risk"], "调整建议": store["action"]} for store in active_stores])
+    detail = pd.DataFrame([{"门店": row["name"], "核心判断": row["judgment"], "评分/经营风险": row["risk"], "调整建议": row["action"]} for row in rows])
     st.dataframe(detail, use_container_width=True, hide_index=True)
-    st.markdown('<p class="section-note">排班口径：门店24小时运营，拣货员日出勤12小时，月休2天；在册建议是排班测算，不直接等于新增招聘人数。</p></div>', unsafe_allow_html=True)
+    st.markdown('<p class="section-note">以上模块均会跟随“门店”和“时间周期”筛选联动；选择“全部”时展示六店汇总与全量对比。</p></div>', unsafe_allow_html=True)
