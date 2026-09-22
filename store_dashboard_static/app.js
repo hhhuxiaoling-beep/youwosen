@@ -1,4 +1,21 @@
 const data = window.DASHBOARD_DATA;
+
+const ratingPatch = {"sourceWorkbook":"优沃森直营店全量表260921_补充评分分析.xlsx","ratingStatus":"评分已补充：9.22六店平均63.5分，较9.16提升4.0分；皮革城仍为钻石，康桥、东站提升明显但商品体验短板突出。","ratingSummary":{"score916":59.5,"score922":63.5,"scoreChange":4.0,"diamondStores":["皮革城店"],"biggestImprovement":"东站店","biggestImprovementChange":8.4,"mainRisk":"短板集中在商品评价、商品负反馈、配送时效和配送准时率；高负荷门店要防止单量增长继续拉低商品体验。","action":"将评分纳入周复盘：高负荷门店盯商品体验，低负荷门店同步看配送和经营转化。","dimensions922":{"展示":4.3,"服务":4.6,"商品":4.0,"履约":4.5},"display916":4.2,"display922":4.3,"displayChange":0.1},"ratings":{"康桥店":{"name":"优沃森超市（康桥店）","grade916":"黄金","score916":47.7,"grade922":"黄金","score922":55.5,"scoreChange":7.8,"display922":4.2,"service922":4.9,"product922":3.5,"fulfillment922":4.6,"metrics922":{"缺货退款率":36.6,"3分钟IM人工回复率":84.2,"配送准时率":67.2,"商品负反馈率":17.5,"有效配送信息回传率":100,"商责介入率":100,"配送时效":68.5,"商品评价分":16.9},"shortBoard":"商品评价分16.9、商品负反馈率17.5、缺货退款率36.6","risk":"商品评价分16.9、商品负反馈率17.5、缺货退款率36.6，订单高负荷下商品体验风险最突出。","action":"先保履约承接，同时专项治理缺货退款、商品评价和负反馈，避免高单量拉低评分。","display916":4.0,"displayChange":0.2},"广丰路店":{"name":"优沃森超市（广丰路店）","grade916":"黄金","score916":70.5,"grade922":"黄金","score922":72.7,"scoreChange":2.2,"display922":4.5,"service922":4.9,"product922":4.5,"fulfillment922":4.0,"metrics922":{"缺货退款率":90.0,"3分钟IM人工回复率":83.7,"配送准时率":10.3,"商品负反馈率":58.4,"有效配送信息回传率":100,"商责介入率":100,"配送时效":24.1,"商品评价分":88.4},"shortBoard":"配送准时率10.3、配送时效24.1、商品负反馈率58.4","risk":"配送准时率10.3、配送时效24.1仍是主要短板，评分提升主要来自IM与商品评价改善。","action":"低负荷先查经营，同时把配送准时和时效纳入店长周复盘。","display916":4.5,"displayChange":0.0},"皮革城店":{"name":"优沃森超市（皮革城店）","grade916":"钻石","score916":81.0,"grade922":"钻石","score922":80.2,"scoreChange":-0.8,"display922":4.7,"service922":5.0,"product922":4.5,"fulfillment922":4.6,"metrics922":{"缺货退款率":75.5,"3分钟IM人工回复率":91.7,"配送准时率":87.5,"商品负反馈率":65.7,"有效配送信息回传率":100,"商责介入率":100,"配送时效":44.6,"商品评价分":87.0},"shortBoard":"配送时效44.6、商品负反馈率65.7、缺货退款率75.5","risk":"仍为钻石店，但配送时效44.6、商品负反馈65.7下降，需防止优势回落。","action":"保持商品评价改善成果，重点盯配送时效和负反馈。","display916":4.7,"displayChange":0.0},"青浦店":{"name":"优沃森超市（青浦店）","grade916":"黄金","score916":49.0,"grade922":"黄金","score922":51.3,"scoreChange":2.3,"display922":4.1,"service922":4.0,"product922":3.8,"fulfillment922":4.8,"metrics922":{"缺货退款率":56.4,"3分钟IM人工回复率":75.6,"配送准时率":92.1,"商品负反馈率":25.4,"有效配送信息回传率":100,"商责介入率":32.5,"配送时效":75.3,"商品评价分":46.4},"shortBoard":"商品负反馈率25.4、商责介入率32.5、商品评价分46.4","risk":"商责介入率32.5、商品负反馈25.4、商品评价46.4偏低，增长期服务质量仍不稳。","action":"维持增长观察，同时复盘商品与客诉责任原因，避免单量增长放大差评。","display916":4.0,"displayChange":0.1},"七宝店":{"name":"优沃森超市（七宝店）","grade916":"黄金","score916":58.4,"grade922":"黄金","score922":62.3,"scoreChange":3.9,"display922":4.3,"service922":4.8,"product922":3.8,"fulfillment922":4.7,"metrics922":{"缺货退款率":55.6,"3分钟IM人工回复率":74.4,"配送准时率":87.3,"商品负反馈率":25.6,"有效配送信息回传率":100,"商责介入率":100,"配送时效":54.6,"商品评价分":58.7},"shortBoard":"商品负反馈率25.6、配送时效54.6、缺货退款率55.6","risk":"商品负反馈25.6、IM回复74.4、商品评价58.7仍需改善，订单回落与评分短板需一起看。","action":"先查订单回落原因，同时补强IM响应和商品反馈治理。","display916":4.2,"displayChange":0.1},"东站店":{"name":"优沃森超市（东站店）","grade916":"黄金","score916":50.3,"grade922":"黄金","score922":58.7,"scoreChange":8.4,"display922":4.2,"service922":4.3,"product922":4.1,"fulfillment922":4.5,"metrics922":{"缺货退款率":76.5,"3分钟IM人工回复率":100,"配送准时率":90.1,"商品负反馈率":43.1,"有效配送信息回传率":100,"商责介入率":34.5,"配送时效":25.7,"商品评价分":24.1},"shortBoard":"商品评价分24.1、配送时效25.7、商责介入率34.5","risk":"提升最大，但商品评价24.1、配送时效25.7、商责介入率34.5仍低。","action":"继续恢复单量，专项跟进商品评价、配送时效和商责介入。","display916":4.1,"displayChange":0.1}}};
+
+function ensureRatingData() {
+  if (!data.ratingSummary) {
+    data.ratingSummary = ratingPatch.ratingSummary;
+  }
+  data.ratingStatus = ratingPatch.ratingStatus;
+  data.sourceWorkbook = ratingPatch.sourceWorkbook;
+  (data.stores || []).forEach((store) => {
+    if (!store.rating && ratingPatch.ratings[store.name]) {
+      store.rating = ratingPatch.ratings[store.name];
+    }
+  });
+}
+
+ensureRatingData();
 const ALL_VALUE = "__all__";
 let currentSelection = ALL_VALUE;
 let currentPeriod = "9/14—9/19";
