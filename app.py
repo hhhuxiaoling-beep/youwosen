@@ -469,7 +469,10 @@ st.caption(f"当前数据源：`{data_source_label}`")
 page = st.sidebar.radio("页面", ["招聘进度看板", "门店数据可视化看板", "组织架构 XMind"], index=0)
 
 if page == "门店数据可视化看板":
-    st.switch_page("pages/store_dashboard.py")
+    from store_dashboard_inline import render_store_dashboard_inline
+
+    render_store_dashboard_inline()
+    st.stop()
 
 if page == "组织架构 XMind":
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
