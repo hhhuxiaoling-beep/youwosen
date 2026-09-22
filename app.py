@@ -29,6 +29,7 @@ XMIND_SHARE_URL = "https://app.xmind.cn/share/41hH9ZGj"
 BEIJING_TZ = ZoneInfo("Asia/Shanghai")
 OWNER_DISPLAY_ORDER = ["吴双双", "张蓉蓉", "郭周洲", "其他", "巢育敏", "刘新风"]
 NAMED_OWNER_GROUPS = [owner for owner in OWNER_DISPLAY_ORDER if owner != "其他"]
+STORE_DASHBOARD_DEPLOY_VERSION = "2026-09-22-rating-dashboard-v3"
 
 
 def load_data_loader():
