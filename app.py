@@ -454,6 +454,15 @@ source_owners = list(dict.fromkeys(requirement_owners + onboard_owners))
 owner_options = ordered_owner_options(source_owners)
 project_options = ["全部"] + [project for project in ["优沃森", "淘宝闪购"] if project in set(requirements.get("项目", pd.Series(dtype=str)).dropna().astype(str))]
 
+page = st.sidebar.radio("页面", ["招聘进度看板", "门店数据可视化看板", "组织架构 XMind"], index=0)
+
+if page == "门店数据可视化看板":
+    from store_dashboard_inline import render_store_dashboard_inline
+
+    render_store_dashboard_inline()
+    st.stop()
+
+
 st.markdown(
     """
     <div class="hero">
@@ -465,14 +474,6 @@ st.markdown(
 )
 
 st.caption(f"当前数据源：`{data_source_label}`")
-
-page = st.sidebar.radio("页面", ["招聘进度看板", "门店数据可视化看板", "组织架构 XMind"], index=0)
-
-if page == "门店数据可视化看板":
-    from store_dashboard_inline import render_store_dashboard_inline
-
-    render_store_dashboard_inline()
-    st.stop()
 
 if page == "组织架构 XMind":
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
