@@ -18,17 +18,20 @@ def _build_dashboard_html() -> str:
     index_html = _read_static("index.html")
     styles = _read_static("styles.css")
     data_js = _read_static("dashboard-data.js")
+    rating_js = _read_static("rating-data.js")
     app_js = _read_static("app.js")
 
     html = index_html.replace('<link rel="stylesheet" href="styles.css" />', f"<style>{styles}</style>")
-    html = html.replace('<script src="dashboard-data.js"></script>', f"<script>{data_js}</script>")
+    html = html.replace(
+        '<script src="dashboard-data.js"></script>',
+        f"<script>{data_js}</script><script>{rating_js}</script>",
+    )
     html = html.replace('<script src="app.js"></script>', f"<script>{app_js}</script>")
     html = html.replace("</head>", "<base target='_self' /></head>")
     return html
 
 
 def render_store_dashboard_inline() -> None:
-    st.set_page_config(page_title="门店数据可视化看板", page_icon="🏪", layout="wide")
     st.markdown(
         """
         <style>
