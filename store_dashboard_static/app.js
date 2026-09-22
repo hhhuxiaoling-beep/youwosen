@@ -47,7 +47,8 @@ function scoreClass(score) {
 function gradeClass(grade) {
   const rank = { 青铜: "bronze", 白银: "silver", 黄金: "gold", 钻石: "diamond", 王者: "king" };
   return rank[grade] || "neutral";
-}\n
+}
+
 function scoreWithDelta(score, delta) {
   return `<span class="score-inline"><span class="score-number">${fmt.format(score)}</span>${deltaBadge(delta)}</span>`;
 }
