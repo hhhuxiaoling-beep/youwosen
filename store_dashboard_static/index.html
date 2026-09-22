@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>优沃森直营店数据可视化看板</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f172a'/%3E%3Cpath d='M8 21h16v3H8zM9 16h4v3H9zM15 10h4v9h-4zM21 6h4v13h-4z' fill='%232dd4bf'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">优沃森直营店</p>
+          <h1>门店数据可视化看板</h1>
+          <p class="subline" id="periodLine"></p>
+        </div>
+        <div class="topbar-actions">
+          <label for="storeSelect">门店</label>
+          <select id="storeSelect" aria-label="选择门店"></select>
+        </div>
+      </header>
+
+      <section class="kpi-grid" id="kpiGrid" aria-label="整体指标"></section>
+
+      <section class="panel top-table-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">全量表核心指标</p>
+            <h2 id="tableTitle">门店核心指标</h2>
+          </div>
+          <div class="period-switch" id="periodSwitch" aria-label="选择时间周期"></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>门店</th>
+                <th>人数</th>
+                <th>日均单量</th>
+                <th>人均单量</th>
+                <th>负荷率</th>
+                <th>周环比</th>
+                <th>单均人工</th>
+                <th>24h在册建议</th>
+              </tr>
+            </thead>
+            <tbody id="storeTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">人效与经营对比</p>
+            <h2 id="efficiencyTitle">负荷、成本与工作量折算</h2>
+          </div>
+          <span class="benchmark">100% = 150 单/人/天</span>
+        </div>
+        <div class="efficiency-grid" id="efficiencyGrid"></div>
+      </section>
+
+      <section class="layout-grid">
+        <article class="panel panel-wide">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">经营优先级</p>
+              <h2>本周需要领导快速看到的事</h2>
+            </div>
+          </div>
+          <div class="signal-grid" id="signalGrid"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">人效</p>
+              <h2>工作负荷率</h2>
+            </div>
+            <span class="benchmark">150 单/人/天</span>
+          </div>
+          <div id="loadChart" class="chart"></div>
+        </article>
+      </section>
+
+      <section class="layout-grid">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">经营对比</p>
+              <h2>日均单量与单均人工</h2>
+            </div>
+          </div>
+          <div id="costChart" class="chart"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">趋势</p>
+              <h2>三周日均单量</h2>
+            </div>
+          </div>
+          <div id="trendChart" class="chart"></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">单店详情</p>
+            <h2 id="storeTitle"></h2>
+          </div>
+          <span id="storeTag" class="store-tag"></span>
+        </div>
+        <div class="store-detail">
+          <div class="store-metrics" id="storeMetrics"></div>
+          <div class="narrative-grid">
+            <section>
+              <h3>核心判断</h3>
+              <p id="storeJudgment"></p>
+            </section>
+            <section>
+              <h3>主要风险</h3>
+              <p id="storeRisk"></p>
+            </section>
+            <section>
+              <h3>后续调整建议</h3>
+              <p id="storeAction"></p>
+            </section>
+            <section>
+              <h3>验收重点</h3>
+              <p id="storeAcceptance"></p>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="layout-grid">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">小时画像</p>
+              <h2>单量峰谷与覆盖压力</h2>
+            </div>
+          </div>
+          <div id="hourChart" class="chart tall"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">24小时运营</p>
+              <h2>排班配置建议</h2>
+            </div>
+          </div>
+          <div id="shiftPlan" class="shift-plan"></div>
+        </article>
+      </section>
+
+      <footer>
+        <p id="sourceLine"></p>
+        <p>评分数据暂空；无毛利、实际工时、履约及评分数据，暂不形成盈利或服务质量排名。</p>
+      </footer>
+    </main>
+
+    <script src="dashboard-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
