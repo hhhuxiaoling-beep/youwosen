@@ -76,6 +76,7 @@ def render_store_dashboard_inline() -> None:
     """, unsafe_allow_html=True)
 
     st.markdown('<div class="eyebrow">优沃森直营店</div><h1 class="dash-title">门店数据可视化看板</h1><div class="sub">统计期：2026/9/14—9/19；环比对比：2026/9/7—9/12；评分已补充9.16与9.22两期。</div>', unsafe_allow_html=True)
+    st.caption("数据版本：2026-09-22 rating-v4；含门店等级、综合体验分、客户端展示评分及 9.16→9.22 变化。")
 
     top_left, top_right = st.columns([3, 1])
     with top_right:
