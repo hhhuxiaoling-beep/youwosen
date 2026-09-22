@@ -40,11 +40,14 @@
             <thead>
               <tr>
                 <th>门店</th>
+                <th>门店等级</th>
                 <th>人数</th>
                 <th>日均单量</th>
                 <th>人均单量</th>
                 <th>负荷率</th>
                 <th>周环比</th>
+                <th>综合体验分</th>
+                <th>客户端展示评分</th>
                 <th>单均人工</th>
                 <th>24h在册建议</th>
               </tr>
@@ -63,6 +66,29 @@
           <span class="benchmark">100% = 150 单/人/天</span>
         </div>
         <div class="efficiency-grid" id="efficiencyGrid"></div>
+      </section>
+
+      <section class="layout-grid score-layout">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">质量评分</p>
+              <h2 id="scoreTitle">9.16与9.22综合体验分变化</h2>
+            </div>
+            <span class="benchmark">9.22综合体验分</span>
+          </div>
+          <div id="scoreChart" class="chart score-chart"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">评分短板</p>
+              <h2 id="scoreRiskTitle">评分风险与调整重点</h2>
+            </div>
+          </div>
+          <div id="scoreInsight" class="score-insight"></div>
+        </article>
       </section>
 
       <section class="layout-grid">
@@ -165,7 +191,7 @@
 
       <footer>
         <p id="sourceLine"></p>
-        <p>评分数据暂空；无毛利、实际工时、履约及评分数据，暂不形成盈利或服务质量排名。</p>
+        <p>评分已补充9.16与9.22两期；无毛利、实际工时和完整履约明细，暂不形成盈利排名。</p>
       </footer>
     </main>
 
