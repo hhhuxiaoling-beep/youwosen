@@ -1,27 +1,15 @@
 const data = window.DASHBOARD_DATA;
-
-const ratingPatch = {"sourceWorkbook":"优沃森直营店全量表260921_补充评分分析.xlsx","ratingStatus":"评分已补充：9.22六店平均63.5分，较9.16提升4.0分；皮革城仍为钻石，康桥、东站提升明显但商品体验短板突出。","ratingSummary":{"score916":59.5,"score922":63.5,"scoreChange":4.0,"diamondStores":["皮革城店"],"biggestImprovement":"东站店","biggestImprovementChange":8.4,"mainRisk":"短板集中在商品评价、商品负反馈、配送时效和配送准时率；高负荷门店要防止单量增长继续拉低商品体验。","action":"将评分纳入周复盘：高负荷门店盯商品体验，低负荷门店同步看配送和经营转化。","dimensions922":{"展示":4.3,"服务":4.6,"商品":4.0,"履约":4.5},"display916":4.2,"display922":4.3,"displayChange":0.1},"ratings":{"康桥店":{"name":"优沃森超市（康桥店）","grade916":"黄金","score916":47.7,"grade922":"黄金","score922":55.5,"scoreChange":7.8,"display922":4.2,"service922":4.9,"product922":3.5,"fulfillment922":4.6,"metrics922":{"缺货退款率":36.6,"3分钟IM人工回复率":84.2,"配送准时率":67.2,"商品负反馈率":17.5,"有效配送信息回传率":100,"商责介入率":100,"配送时效":68.5,"商品评价分":16.9},"shortBoard":"商品评价分16.9、商品负反馈率17.5、缺货退款率36.6","risk":"商品评价分16.9、商品负反馈率17.5、缺货退款率36.6，订单高负荷下商品体验风险最突出。","action":"先保履约承接，同时专项治理缺货退款、商品评价和负反馈，避免高单量拉低评分。","display916":4.0,"displayChange":0.2},"广丰路店":{"name":"优沃森超市（广丰路店）","grade916":"黄金","score916":70.5,"grade922":"黄金","score922":72.7,"scoreChange":2.2,"display922":4.5,"service922":4.9,"product922":4.5,"fulfillment922":4.0,"metrics922":{"缺货退款率":90.0,"3分钟IM人工回复率":83.7,"配送准时率":10.3,"商品负反馈率":58.4,"有效配送信息回传率":100,"商责介入率":100,"配送时效":24.1,"商品评价分":88.4},"shortBoard":"配送准时率10.3、配送时效24.1、商品负反馈率58.4","risk":"配送准时率10.3、配送时效24.1仍是主要短板，评分提升主要来自IM与商品评价改善。","action":"低负荷先查经营，同时把配送准时和时效纳入店长周复盘。","display916":4.5,"displayChange":0.0},"皮革城店":{"name":"优沃森超市（皮革城店）","grade916":"钻石","score916":81.0,"grade922":"钻石","score922":80.2,"scoreChange":-0.8,"display922":4.7,"service922":5.0,"product922":4.5,"fulfillment922":4.6,"metrics922":{"缺货退款率":75.5,"3分钟IM人工回复率":91.7,"配送准时率":87.5,"商品负反馈率":65.7,"有效配送信息回传率":100,"商责介入率":100,"配送时效":44.6,"商品评价分":87.0},"shortBoard":"配送时效44.6、商品负反馈率65.7、缺货退款率75.5","risk":"仍为钻石店，但配送时效44.6、商品负反馈65.7下降，需防止优势回落。","action":"保持商品评价改善成果，重点盯配送时效和负反馈。","display916":4.7,"displayChange":0.0},"青浦店":{"name":"优沃森超市（青浦店）","grade916":"黄金","score916":49.0,"grade922":"黄金","score922":51.3,"scoreChange":2.3,"display922":4.1,"service922":4.0,"product922":3.8,"fulfillment922":4.8,"metrics922":{"缺货退款率":56.4,"3分钟IM人工回复率":75.6,"配送准时率":92.1,"商品负反馈率":25.4,"有效配送信息回传率":100,"商责介入率":32.5,"配送时效":75.3,"商品评价分":46.4},"shortBoard":"商品负反馈率25.4、商责介入率32.5、商品评价分46.4","risk":"商责介入率32.5、商品负反馈25.4、商品评价46.4偏低，增长期服务质量仍不稳。","action":"维持增长观察，同时复盘商品与客诉责任原因，避免单量增长放大差评。","display916":4.0,"displayChange":0.1},"七宝店":{"name":"优沃森超市（七宝店）","grade916":"黄金","score916":58.4,"grade922":"黄金","score922":62.3,"scoreChange":3.9,"display922":4.3,"service922":4.8,"product922":3.8,"fulfillment922":4.7,"metrics922":{"缺货退款率":55.6,"3分钟IM人工回复率":74.4,"配送准时率":87.3,"商品负反馈率":25.6,"有效配送信息回传率":100,"商责介入率":100,"配送时效":54.6,"商品评价分":58.7},"shortBoard":"商品负反馈率25.6、配送时效54.6、缺货退款率55.6","risk":"商品负反馈25.6、IM回复74.4、商品评价58.7仍需改善，订单回落与评分短板需一起看。","action":"先查订单回落原因，同时补强IM响应和商品反馈治理。","display916":4.2,"displayChange":0.1},"东站店":{"name":"优沃森超市（东站店）","grade916":"黄金","score916":50.3,"grade922":"黄金","score922":58.7,"scoreChange":8.4,"display922":4.2,"service922":4.3,"product922":4.1,"fulfillment922":4.5,"metrics922":{"缺货退款率":76.5,"3分钟IM人工回复率":100,"配送准时率":90.1,"商品负反馈率":43.1,"有效配送信息回传率":100,"商责介入率":34.5,"配送时效":25.7,"商品评价分":24.1},"shortBoard":"商品评价分24.1、配送时效25.7、商责介入率34.5","risk":"提升最大，但商品评价24.1、配送时效25.7、商责介入率34.5仍低。","action":"继续恢复单量，专项跟进商品评价、配送时效和商责介入。","display916":4.1,"displayChange":0.1}}};
-
-function ensureRatingData() {
-  if (!data.ratingSummary) {
-    data.ratingSummary = ratingPatch.ratingSummary;
-  }
-  data.ratingStatus = ratingPatch.ratingStatus;
-  data.sourceWorkbook = ratingPatch.sourceWorkbook;
-  (data.stores || []).forEach((store) => {
-    if (!store.rating && ratingPatch.ratings[store.name]) {
-      store.rating = ratingPatch.ratings[store.name];
-    }
-  });
-}
-
-ensureRatingData();
 const ALL_VALUE = "__all__";
 let currentSelection = ALL_VALUE;
-let currentPeriod = "9/14—9/19";
+let currentPeriod = data.currentPeriodKey;
 
 const fmt = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 1 });
 const moneyFmt = new Intl.NumberFormat("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function fmtValue(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "暂无";
+  return fmt.format(value);
+}
 
 function pct(value, digits = 1) {
   if (value === null || value === undefined) return "-";
@@ -67,10 +55,12 @@ function gradeClass(grade) {
 }
 
 function scoreWithDelta(score, delta) {
+  if (score === null || score === undefined) return '<span class="score-inline"><span class="score-number">暂无</span></span>';
   return `<span class="score-inline"><span class="score-number">${fmt.format(score)}</span>${deltaBadge(delta)}</span>`;
 }
 
 function deltaBadge(delta) {
+  if (delta === null || delta === undefined || Number.isNaN(Number(delta))) return '<span class="score-delta flat">—</span>';
   const direction = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
   const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "—";
   return `<span class="score-delta ${direction}">${arrow}${Math.abs(delta).toFixed(1)}</span>`;
@@ -135,7 +125,7 @@ function buildAggregateStore() {
     peopleGap: data.totals.peopleGap,
     baseDailyShifts: data.totals.baseDailyShifts,
     registeredStaff: data.totals.registeredStaff,
-    registeredGap: data.totals.registeredStaff - data.totals.staff,
+    registeredGap: data.totals.registeredStaff - data.totals.staffEnd,
     rating: {
       grade916: "—",
       score916: data.ratingSummary.score916,
@@ -155,7 +145,7 @@ function buildAggregateStore() {
     hourlyDetail,
     requiredPeakSpeed: Math.max(...hourlyDetail.map((row) => row.peakSpeed)),
     judgment: "整体负荷接近标准，但门店之间差异大。康桥高负荷需要优先保障承接，低负荷门店需先查经营与排班原因。",
-    risk: `合计均值会掩盖康桥高压、低负荷门店和部分门店订单回落。评分已补充，当前平均 ${fmt.format(data.ratingSummary.score922)} 分，短板集中在商品体验与配送履约。`,
+      risk: `合计均值会掩盖高负荷、低负荷门店和部分门店订单回落。评分对比覆盖 ${data.ratingSummary.comparableStoreCount}/${data.ratingSummary.totalStoreCount} 家可比门店，${data.ratingCurrentDate}平均 ${fmtValue(data.ratingSummary.score922)} 分。`,
     action: "下周按门店拆解订单、人效、单均人工、小时峰谷和实际出勤。评分纳入周复盘，高负荷门店先盯商品体验，低负荷门店同步看配送和转化。",
     acceptance: "复盘日均单量、负荷率、单均人工、24小时覆盖、缺货取消、拣货超时和评分变化。",
     weekly: data.weeklyTotals,
@@ -170,7 +160,7 @@ function getSelectedStore(value) {
 }
 
 function storesForView(value) {
-  return value === ALL_VALUE ? data.stores : [getSelectedStore(value)];
+  return value === ALL_VALUE ? data.stores.map(periodAdjustedStore) : [periodAdjustedStore(getSelectedStore(value))];
 }
 
 function getPeriodRows(selectionValue) {
@@ -182,20 +172,41 @@ function selectedPeriodRow(store) {
   return (store.weekly || []).find((row) => row.period === currentPeriod) || null;
 }
 
+function periodAdjustedStore(store) {
+  const row = selectedPeriodRow(store);
+  if (!row) return store;
+  const staff = row.staff ?? store.staff;
+  const dailyOrders = row.dailyOrders ?? store.dailyOrders;
+  const ordersPerPerson = row.ordersPerPerson ?? (staff ? dailyOrders / staff : null);
+  return {
+    ...store,
+    staff,
+    dailyOrders,
+    ordersPerPerson,
+    loadRate: ordersPerPerson === null ? null : ordersPerPerson / data.standardOrdersPerPerson,
+    wow: row.wow,
+    dailyChange: row.previousDailyOrders === null || row.previousDailyOrders === undefined ? null : dailyOrders - row.previousDailyOrders,
+    surplusOrders: staff ? dailyOrders - staff * data.standardOrdersPerPerson : null,
+    workloadPeople: dailyOrders / data.standardOrdersPerPerson,
+    peopleGap: staff ? dailyOrders / data.standardOrdersPerPerson - staff : null,
+    laborPerOrder: dailyOrders ? store.laborDaily / dailyOrders : null,
+  };
+}
+
 function periodLabel(period) {
   return String(period).replace(" 全期", "").replace("—", "-");
 }
 
 function renderKpis(selectionValue) {
-  const view = getSelectedStore(selectionValue);
+  const view = periodAdjustedStore(getSelectedStore(selectionValue));
   const isAll = selectionValue === ALL_VALUE;
   const cards = [
-    [isAll ? "6店日均单量" : "日均单量", fmt.format(view.dailyOrders), `环比 ${signedPct(view.wow)}`],
-    [isAll ? "表内拣货员" : "拣货员", `${view.staff} 人`, isAll ? "康桥店按 3 人口径" : `${view.name} 当前口径`],
-    [isAll ? "整体人均单量" : "人均单量", fmt.format(view.ordersPerPerson), `负荷 ${pct(view.loadRate)}`],
-    [isAll ? "9.22综合体验分" : "综合体验分", fmt.format(view.rating.score922), `较9.16 ${signedNumber(view.rating.scoreChange, 1)} 分`],
+    [isAll ? `${data.stores.length}店日均单量` : "日均单量", fmt.format(view.dailyOrders), `环比 ${signedPct(view.wow)}`],
+    [isAll ? "周期平均在职拣货员" : "周期平均在职人数", `${fmt.format(view.staff)} 人`, `${currentPeriod}逐日计算`],
+    [isAll ? "整体人均单量" : "人均单量", fmtValue(view.ordersPerPerson), `负荷 ${pct(view.loadRate)}`],
+    [isAll ? `${data.ratingCurrentDate}综合体验分` : "综合体验分", fmtValue(view.rating.score922), `较${data.ratingPreviousDate} ${signedNumber(view.rating.scoreChange, 1)} 分`],
     ["日均人工成本", `${fmt.format(view.laborDaily)} 元`, `单均人工 ${moneyFmt.format(view.laborPerOrder)} 元/单`],
-    ["24h在册建议", `${view.registeredStaff} 人`, isAll ? "合计建议，不等于直接招聘数" : `较原表 ${signedNumber(view.registeredGap, 0)} 人`],
+    ["24h在册建议", `${view.registeredStaff} 人`, isAll ? "合计建议，不等于直接招聘数" : `较本期期末在职 ${signedNumber(view.registeredGap, 0)} 人`],
   ];
 
   const grid = document.getElementById("kpiGrid");
@@ -235,7 +246,7 @@ function renderSignals(selectionValue) {
       {
         className: "is-green",
         title: "评分纳入周复盘",
-        body: `9.22六店平均 ${fmt.format(data.ratingSummary.score922)} 分，较9.16 ${signedNumber(data.ratingSummary.scoreChange, 1)} 分。增长门店：${growth}；回落门店：${declining}。`,
+        body: `${data.ratingCurrentDate}可比门店平均 ${fmtValue(data.ratingSummary.score922)} 分，较${data.ratingPreviousDate} ${signedNumber(data.ratingSummary.scoreChange, 1)} 分；两期可比 ${data.ratingSummary.comparableStoreCount}/${data.ratingSummary.totalStoreCount} 家。增长门店：${growth || "无"}；回落门店：${declining || "无"}。`,
       },
     ];
   } else {
@@ -334,23 +345,27 @@ function renderTrendChart(selectionValue) {
   const width = 620;
   const height = 320;
   const margin = { top: 20, right: 22, bottom: 58, left: 58 };
-  const allValues = stores.flatMap((store) => store.weekly?.map((row) => row.dailyOrders) || []);
+  const weeklySeries = stores.map((store) => ({
+    store,
+    rows: (store.weekly || []).filter((row) => !row.period.includes("全期")),
+  }));
+  const allValues = weeklySeries.flatMap(({ rows }) => rows.map((row) => row.dailyOrders));
   const min = Math.min(...allValues) * 0.88;
   const max = Math.max(...allValues) * 1.08;
-  const periods = stores[0].weekly.map((row) => row.period);
+  const periods = weeklySeries[0].rows.map((row) => row.period);
   const x = (index) => margin.left + (index / (periods.length - 1)) * (width - margin.left - margin.right);
   const y = (value) => height - margin.bottom - ((value - min) / (max - min)) * (height - margin.top - margin.bottom);
-  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": "三周日均单量趋势" });
+  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": "近五周日均单量趋势" });
 
   svg.appendChild(svgEl("line", { x1: margin.left, y1: height - margin.bottom, x2: width - margin.right, y2: height - margin.bottom, stroke: "#cbd5e1" }));
   periods.forEach((period, index) => {
     svg.appendChild(textEl(period.replace("—", "-"), { x: x(index) - 34, y: height - 24, class: "axis-label" }));
   });
 
-  stores.forEach((store) => {
-    const points = store.weekly.map((row, index) => `${x(index)},${y(row.dailyOrders)}`).join(" ");
+  weeklySeries.forEach(({ store, rows }) => {
+    const points = rows.map((row, index) => `${x(index)},${y(row.dailyOrders)}`).join(" ");
     svg.appendChild(svgEl("polyline", { points, fill: "none", stroke: colorForStore(store), "stroke-width": 2.5, "stroke-linecap": "round", "stroke-linejoin": "round", opacity: 0.86 }));
-    const last = store.weekly[store.weekly.length - 1];
+    const last = rows[rows.length - 1];
     svg.appendChild(textEl(store.name.replace("店", ""), { x: width - 70, y: y(last.dailyOrders) + 4, class: "chart-label" }));
   });
 
@@ -362,24 +377,31 @@ function renderTable(selectionValue) {
   clear(body);
   const stores = storesForView(selectionValue);
   document.getElementById("tableTitle").textContent = selectionValue === ALL_VALUE ? `门店核心指标：${currentPeriod}` : `${stores[0].name}核心指标：${currentPeriod}`;
+  const scopeRow = selectedPeriodRow(stores[0]);
+  const volumeScope = scopeRow?.wow === null || scopeRow?.wow === undefined
+    ? `日均单量环比：${scopeRow?.comparison || "无可比周期"}`
+    : `日均单量环比：${currentPeriod} 对比 ${scopeRow.comparison}`;
+  document.getElementById("tableScopeNote").textContent = `${volumeScope}；评分变化：${data.ratingCurrentDate} 对比 ${data.ratingPreviousDate}（评分日期固定，不随单量周期切换）。`;
   stores.forEach((store) => {
     const periodRow = selectedPeriodRow(store);
     const dailyOrders = periodRow?.dailyOrders ?? store.dailyOrders;
+    const staff = periodRow?.staff ?? store.staff;
     const ordersPerPerson = periodRow?.ordersPerPerson ?? store.ordersPerPerson;
     const loadRate = ordersPerPerson / data.standardOrdersPerPerson;
-    const wow = periodRow?.wow ?? store.wow;
+    const wow = periodRow ? periodRow.wow : store.wow;
+    const laborPerOrder = dailyOrders ? store.laborDaily / dailyOrders : null;
     const row = document.createElement("tr");
     row.innerHTML = `
       <td><strong>${store.name}</strong></td>
-      <td><span class="grade-pill ${gradeClass(store.rating.grade922)}">${store.rating.grade922}</span></td>
-      <td>${store.staff}</td>
+      <td><span class="grade-pill ${gradeClass(store.rating.grade922)}">${store.rating.grade922 || "暂无"}</span></td>
+      <td>${fmt.format(staff)}</td>
       <td>${fmt.format(dailyOrders)}</td>
       <td>${fmt.format(ordersPerPerson)}</td>
       <td><span class="pill ${statusClass({ ...store, loadRate })}">${pct(loadRate)}</span></td>
       <td>${wow === null || wow === undefined ? "-" : signedPct(wow)}</td>
       <td>${scoreWithDelta(store.rating.score922, store.rating.scoreChange)}</td>
       <td>${scoreWithDelta(store.rating.display922, store.rating.displayChange)}</td>
-      <td>${moneyFmt.format(store.laborPerOrder)}</td>
+      <td>${laborPerOrder === null ? "-" : moneyFmt.format(laborPerOrder)}</td>
       <td>${store.registeredStaff} 人</td>
     `;
     body.appendChild(row);
@@ -394,23 +416,23 @@ function renderPeriodSwitch(selectionValue) {
     currentPeriod = rows[rows.length - 2]?.period || rows[0]?.period || currentPeriod;
   }
   rows.forEach((row) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `period-button${row.period === currentPeriod ? " is-active" : ""}`;
-    button.textContent = periodLabel(row.period);
-    button.addEventListener("click", () => {
-      currentPeriod = row.period;
-      renderDashboard(currentSelection);
-    });
-    target.appendChild(button);
+    const option = document.createElement("option");
+    option.value = row.period;
+    option.textContent = periodLabel(row.period);
+    target.appendChild(option);
   });
+  target.value = currentPeriod;
+  target.onchange = () => {
+    currentPeriod = target.value;
+    renderDashboard(currentSelection);
+  };
 }
 
 function renderEfficiencyGrid(selectionValue) {
-  const store = getSelectedStore(selectionValue);
+  const store = periodAdjustedStore(getSelectedStore(selectionValue));
   const target = document.getElementById("efficiencyGrid");
   clear(target);
-  document.getElementById("efficiencyTitle").textContent = selectionValue === ALL_VALUE ? "6店负荷、成本与工作量折算" : `${store.name}负荷、成本与工作量折算`;
+  document.getElementById("efficiencyTitle").textContent = selectionValue === ALL_VALUE ? `${data.stores.length}店负荷、成本与工作量折算` : `${store.name}负荷、成本与工作量折算`;
 
   const cards = [
     ["本周负荷率", pct(store.loadRate), `本周人均 ${fmt.format(store.ordersPerPerson)} 单/人/天`],
@@ -420,7 +442,7 @@ function renderEfficiencyGrid(selectionValue) {
     ["全期人均", `${fmt.format(store.periodOrdersPerPerson)} 单`, `全期负荷 ${pct(store.periodLoadRate)}`],
     ["全期单均人工", `${moneyFmt.format(store.periodLaborPerOrder)} 元/单`, "未含货品、配送、租金等成本"],
     ["周环比", signedPct(store.wow), `日均增减 ${signedNumber(store.dailyChange, 1)} 单`],
-    ["综合体验分", `${fmt.format(store.rating.score922)} 分`, `较9.16 ${signedNumber(store.rating.scoreChange, 1)} 分；${store.rating.grade922}`],
+    ["综合体验分", store.rating.score922 === null ? "暂无" : `${fmt.format(store.rating.score922)} 分`, `较${data.ratingPreviousDate} ${signedNumber(store.rating.scoreChange, 1)} 分；${store.rating.grade922 || "暂无等级"}`],
   ];
 
   cards.forEach(([label, value, note]) => {
@@ -440,7 +462,7 @@ function renderScoreChart(selectionValue) {
   const margin = { top: 24, right: 80, bottom: 30, left: 82 };
   const height = margin.top + margin.bottom + rowHeight * stores.length;
   const x = (value) => margin.left + (value / 100) * (width - margin.left - margin.right);
-  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": "9.16与9.22评分变化" });
+  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": `${data.ratingPreviousDate}与${data.ratingCurrentDate}评分变化` });
 
   [50, 65, 80].forEach((tick) => {
     svg.appendChild(svgEl("line", { x1: x(tick), y1: 12, x2: x(tick), y2: height - 18, stroke: "#e2e8f0", "stroke-dasharray": tick === 80 ? "4 4" : "" }));
@@ -451,6 +473,10 @@ function renderScoreChart(selectionValue) {
     const y = margin.top + index * rowHeight;
     const rating = store.rating;
     svg.appendChild(textEl(store.name.replace("店", ""), { x: 0, y: y + 21, class: "chart-label" }));
+    if (rating.score916 === null || rating.score916 === undefined || rating.score922 === null || rating.score922 === undefined) {
+      svg.appendChild(textEl("暂无本期评分", { x: margin.left, y: y + 21, class: "axis-label" }));
+      return;
+    }
     svg.appendChild(svgEl("line", { x1: x(rating.score916), y1: y + 16, x2: x(rating.score922), y2: y + 16, stroke: rating.scoreChange >= 0 ? "#0f766e" : "#be123c", "stroke-width": 4, "stroke-linecap": "round" }));
     svg.appendChild(svgEl("circle", { cx: x(rating.score916), cy: y + 16, r: 5, fill: "#94a3b8" }));
     svg.appendChild(svgEl("circle", { cx: x(rating.score922), cy: y + 16, r: 7, fill: colorForStore(store), stroke: "#ffffff", "stroke-width": 2 }));
@@ -458,7 +484,7 @@ function renderScoreChart(selectionValue) {
     svg.appendChild(textEl(signedNumber(rating.scoreChange, 1), { x: width - 76, y: y + 29, class: rating.scoreChange >= 0 ? "chart-positive" : "chart-negative" }));
   });
 
-  svg.appendChild(textEl("灰点9.16，彩点9.22", { x: margin.left, y: 14, class: "axis-label" }));
+  svg.appendChild(textEl(`灰点${data.ratingPreviousDate}，彩点${data.ratingCurrentDate}`, { x: margin.left, y: 14, class: "axis-label" }));
   target.appendChild(svg);
 }
 
@@ -467,7 +493,7 @@ function renderScoreInsight(selectionValue) {
   clear(target);
   const store = getSelectedStore(selectionValue);
   const isAll = selectionValue === ALL_VALUE;
-  document.getElementById("scoreTitle").textContent = isAll ? "6店评分变化" : `${store.name}评分变化`;
+  document.getElementById("scoreTitle").textContent = isAll ? `${data.ratingSummary.comparableStoreCount}家可比门店评分变化` : `${store.name}评分变化`;
   document.getElementById("scoreRiskTitle").textContent = isAll ? "整体评分短板" : `${store.name}评分短板`;
 
   const rating = store.rating;
@@ -480,9 +506,9 @@ function renderScoreInsight(selectionValue) {
   summary.className = "score-summary-card";
   summary.innerHTML = `
     <div>
-      <span>${isAll ? "9.22平均综合体验分" : "9.22综合体验分"}</span>
-      <strong>${fmt.format(rating.score922)}</strong>
-      <small>${rating.grade922}；较9.16 ${signedNumber(rating.scoreChange, 1)} 分</small>
+      <span>${isAll ? `${data.ratingCurrentDate}平均综合体验分` : `${data.ratingCurrentDate}综合体验分`}</span>
+      <strong>${fmtValue(rating.score922)}</strong>
+      <small>${rating.grade922 || "暂无等级"}；较${data.ratingPreviousDate} ${signedNumber(rating.scoreChange, 1)} 分</small>
     </div>
     <p>${rating.risk}</p>
   `;
@@ -493,7 +519,7 @@ function renderScoreInsight(selectionValue) {
   dimensions.forEach(([label, value, delta]) => {
     const item = document.createElement("section");
     item.className = "score-dim";
-    item.innerHTML = `<span>${label}</span><strong>${fmt.format(value)}</strong>${deltaBadge(delta)}`;
+    item.innerHTML = `<span>${label}</span><strong>${fmtValue(value)}</strong>${deltaBadge(delta)}`;
     dimGrid.appendChild(item);
   });
   target.appendChild(dimGrid);
@@ -519,9 +545,9 @@ function renderStoreMetrics(store) {
     ["人均单量", fmt.format(store.ordersPerPerson), `标准 150 单/人/天`],
     ["工作负荷率", pct(store.loadRate), `折算人数差 ${signedNumber(store.peopleGap, 2)} 人`],
     ["单均人工", `${moneyFmt.format(store.laborPerOrder)} 元`, `日均人工 ${fmt.format(store.laborDaily)} 元`],
-    ["综合体验分", `${fmt.format(store.rating.score922)} 分`, `较9.16 ${signedNumber(store.rating.scoreChange, 1)} 分`],
-    ["客户端展示评分", fmt.format(store.rating.display922), `较9.16 ${signedNumber(store.rating.displayChange, 1)} 分`],
-    ["24h在册建议", `${store.registeredStaff} 人`, `较原表 ${signedNumber(store.registeredGap, 0)} 人`],
+    ["综合体验分", store.rating.score922 === null ? "暂无" : `${fmt.format(store.rating.score922)} 分`, `较${data.ratingPreviousDate} ${signedNumber(store.rating.scoreChange, 1)} 分`],
+    ["客户端展示评分", fmtValue(store.rating.display922), `较${data.ratingPreviousDate} ${signedNumber(store.rating.displayChange, 1)} 分`],
+    ["24h在册建议", `${store.registeredStaff} 人`, `较本期期末在职 ${signedNumber(store.registeredGap, 0)} 人`],
     ["峰时速度验证", `${fmt.format(store.requiredPeakSpeed)} 单/人/时`, `平均日基础方案`],
   ];
 
@@ -581,7 +607,7 @@ function renderShiftPlan(store) {
     const summary = document.createElement("section");
     summary.className = "shift-card";
     summary.innerHTML = `
-      <h3>6店排班口径</h3>
+      <h3>${data.stores.length}店排班口径</h3>
       <p class="shift-note">基础日出勤 ${data.totals.baseDailyShifts} 个12小时班，月休2天后独立在册建议 ${data.totals.registeredStaff} 人。该结果是排班测算，不直接等于新增招聘人数。</p>
     `;
     target.appendChild(summary);
@@ -606,7 +632,7 @@ function renderShiftPlan(store) {
     note.className = "shift-card";
     note.innerHTML = `
       <h3>执行提示</h3>
-      <p class="shift-note">康桥需优先验证高峰履约和支援方案；广丰路、皮革城先看低负荷原因和时段覆盖。若改用保守覆盖边界，6店合计会提高到43人在册。</p>
+      <p class="shift-note">高负荷门店优先验证高峰履约和支援方案；低负荷门店先看订单原因和时段覆盖。若改用保守覆盖边界，${data.stores.length}店合计为 ${data.totals.conservativeRegisteredStaff} 人在册。</p>
     `;
     target.appendChild(note);
     return;
@@ -652,6 +678,7 @@ function renderShiftPlan(store) {
 }
 
 function renderStore(store) {
+  const periodStore = periodAdjustedStore(store);
   document.getElementById("storeTitle").textContent = store.name;
   document.getElementById("storeTag").textContent = store.name === "全部门店" ? "汇总" : statusText(store);
   document.getElementById("storeTag").className = `store-tag pill ${store.name === "全部门店" ? "blue" : statusClass(store)}`;
@@ -659,7 +686,7 @@ function renderStore(store) {
   document.getElementById("storeRisk").textContent = store.rating?.risk || store.risk || "";
   document.getElementById("storeAction").textContent = store.rating?.action || store.action || "";
   document.getElementById("storeAcceptance").textContent = store.acceptance || "";
-  renderStoreMetrics(store);
+  renderStoreMetrics(periodStore);
   renderHourChart(store);
   renderShiftPlan(store);
 }
@@ -698,8 +725,10 @@ function renderDashboard(selectionValue) {
 }
 
 function init() {
-  document.getElementById("periodLine").textContent = `统计期：${data.period}；环比对比：${data.comparisonPeriod}；评分已补充9.16与9.22两期。`;
+  document.getElementById("periodLine").textContent = `统计期：${data.period}；环比对比：${data.comparisonPeriod}；评分对比：${data.ratingPreviousDate}与${data.ratingCurrentDate}（可比${data.ratingSummary.comparableStoreCount}/${data.ratingSummary.totalStoreCount}店）。`;
   document.getElementById("sourceLine").textContent = `来源：${data.sourceWorkbook}；人效标准：${data.standardOrdersPerPerson} 单/人/天；24小时排班按12小时班、月休2天测算。`;
+  document.getElementById("scoreHeaderScope").textContent = `${data.ratingCurrentDate}，较${data.ratingPreviousDate}`;
+  document.getElementById("displayScoreHeaderScope").textContent = `${data.ratingCurrentDate}，较${data.ratingPreviousDate}`;
   initStoreSelect();
   renderDashboard(ALL_VALUE);
 }

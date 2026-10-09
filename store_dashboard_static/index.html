@@ -32,8 +32,12 @@
           <div>
             <p class="eyebrow">全量表核心指标</p>
             <h2 id="tableTitle">门店核心指标</h2>
+            <p class="table-scope-note" id="tableScopeNote"></p>
           </div>
-          <div class="period-switch" id="periodSwitch" aria-label="选择时间周期"></div>
+          <div class="topbar-actions period-control">
+            <label for="periodSwitch">时间</label>
+            <select id="periodSwitch" aria-label="选择时间周期"></select>
+          </div>
         </div>
         <div class="table-wrap">
           <table>
@@ -41,13 +45,13 @@
               <tr>
                 <th>门店</th>
                 <th>门店等级</th>
-                <th>人数</th>
+                <th><span>平均在职人数</span><small>拣货员</small></th>
                 <th>日均单量</th>
                 <th>人均单量</th>
                 <th>负荷率</th>
-                <th>周环比</th>
-                <th>综合体验分</th>
-                <th>客户端展示评分</th>
+                <th>日均单量环比</th>
+                <th><span>综合体验分</span><small id="scoreHeaderScope"></small></th>
+                <th><span>客户端展示评分</span><small id="displayScoreHeaderScope"></small></th>
                 <th>单均人工</th>
                 <th>24h在册建议</th>
               </tr>
@@ -73,9 +77,9 @@
           <div class="panel-heading">
             <div>
               <p class="eyebrow">质量评分</p>
-              <h2 id="scoreTitle">9.16与9.22综合体验分变化</h2>
+              <h2 id="scoreTitle">9.16与10.8综合体验分变化</h2>
             </div>
-            <span class="benchmark">9.22综合体验分</span>
+            <span class="benchmark">10.8综合体验分</span>
           </div>
           <div id="scoreChart" class="chart score-chart"></div>
         </article>
@@ -129,7 +133,7 @@
           <div class="panel-heading">
             <div>
               <p class="eyebrow">趋势</p>
-              <h2>三周日均单量</h2>
+              <h2>近五周日均单量</h2>
             </div>
           </div>
           <div id="trendChart" class="chart"></div>
@@ -191,7 +195,7 @@
 
       <footer>
         <p id="sourceLine"></p>
-        <p>评分已补充9.16与9.22两期；无毛利、实际工时和完整履约明细，暂不形成盈利排名。</p>
+        <p>评分对比9.16与10.8；评分变化只使用两期均有数据的同一批门店。无毛利、实际工时和完整履约明细，暂不形成盈利排名。</p>
       </footer>
     </main>
 

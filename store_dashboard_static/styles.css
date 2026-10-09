@@ -216,30 +216,15 @@ select {
   padding: 7px 10px;
 }
 
-.period-switch {
-  display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+.period-control {
+  margin-top: 0;
 }
 
-.period-button {
-  border: 1px solid #cbd5e1;
-  border-radius: 999px;
-  background: #fff;
-  color: #475569;
-  cursor: pointer;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
-  padding: 9px 12px;
-}
-
-.period-button.is-active {
-  border-color: var(--teal);
-  background: var(--teal-soft);
-  color: var(--teal);
+.table-scope-note {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .signal-grid {
@@ -638,6 +623,19 @@ th {
   background: var(--panel-soft);
   font-size: 12px;
   font-weight: 800;
+}
+
+th > span,
+th > small {
+  display: block;
+}
+
+th > small {
+  margin-top: 3px;
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 td strong {
