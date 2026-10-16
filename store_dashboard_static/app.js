@@ -144,7 +144,7 @@ function buildAggregateStore() {
     },
     hourlyDetail,
     requiredPeakSpeed: Math.max(...hourlyDetail.map((row) => row.peakSpeed)),
-    judgment: "整体负荷接近标准，但门店之间差异大。康桥高负荷需要优先保障承接，低负荷门店需先查经营与排班原因。",
+    judgment: `整体负荷 ${pct(data.totals.overallLoadRate)}。高负荷门店：${data.signals.highLoadStores.join('、') || '无'}；低负荷门店：${data.signals.lowLoadStores.join('、') || '无'}，结合订单与排班分店判断。`,
       risk: `合计均值会掩盖高负荷、低负荷门店和部分门店订单回落。评分对比覆盖 ${data.ratingSummary.comparableStoreCount}/${data.ratingSummary.totalStoreCount} 家可比门店，${data.ratingCurrentDate}平均 ${fmtValue(data.ratingSummary.score922)} 分。`,
     action: "下周按门店拆解订单、人效、单均人工、小时峰谷和实际出勤。评分纳入周复盘，高负荷门店先盯商品体验，低负荷门店同步看配送和转化。",
     acceptance: "复盘日均单量、负荷率、单均人工、24小时覆盖、缺货取消、拣货超时和评分变化。",
@@ -181,8 +181,11 @@ function periodAdjustedStore(store) {
   return {
     ...store,
     staff,
+    staffEnd: row.staffEnd ?? store.staffEnd,
+    registeredGap: store.registeredStaff - (row.staffEnd ?? store.staffEnd),
     dailyOrders,
     ordersPerPerson,
+    standardOrders: staff * data.standardOrdersPerPerson,
     loadRate: ordersPerPerson === null ? null : ordersPerPerson / data.standardOrdersPerPerson,
     wow: row.wow,
     dailyChange: row.previousDailyOrders === null || row.previousDailyOrders === undefined ? null : dailyOrders - row.previousDailyOrders,
@@ -202,7 +205,7 @@ function renderKpis(selectionValue) {
   const isAll = selectionValue === ALL_VALUE;
   const cards = [
     [isAll ? `${data.stores.length}店日均单量` : "日均单量", fmt.format(view.dailyOrders), `环比 ${signedPct(view.wow)}`],
-    [isAll ? "周期平均在职拣货员" : "周期平均在职人数", `${fmt.format(view.staff)} 人`, `${currentPeriod}逐日计算`],
+    ["平均在职人数", `${fmt.format(view.staff)} 人`, `拣货员 · ${currentPeriod}逐日计算`],
     [isAll ? "整体人均单量" : "人均单量", fmtValue(view.ordersPerPerson), `负荷 ${pct(view.loadRate)}`],
     [isAll ? `${data.ratingCurrentDate}综合体验分` : "综合体验分", fmtValue(view.rating.score922), `较${data.ratingPreviousDate} ${signedNumber(view.rating.scoreChange, 1)} 分`],
     ["日均人工成本", `${fmt.format(view.laborDaily)} 元`, `单均人工 ${moneyFmt.format(view.laborPerOrder)} 元/单`],
@@ -241,7 +244,7 @@ function renderSignals(selectionValue) {
       {
         className: "is-blue",
         title: "成本最高门店",
-        body: `${highestCost.name} 单均人工 ${moneyFmt.format(highestCost.laborPerOrder)} 元/单，同时环比 ${signedPct(highestCost.wow)}，需要拆解单量回落与班次效率。`,
+        body: `${highestCost.name} 单均人工 ${moneyFmt.format(highestCost.laborPerOrder)} 元/单，日均单量环比 ${signedPct(highestCost.wow)}，需结合订单变化和班次效率分析成本。`,
       },
       {
         className: "is-green",
@@ -353,9 +356,10 @@ function renderTrendChart(selectionValue) {
   const min = Math.min(...allValues) * 0.88;
   const max = Math.max(...allValues) * 1.08;
   const periods = weeklySeries[0].rows.map((row) => row.period);
+  document.getElementById('trendTitle').textContent = `近${periods.length}周日均单量`;
   const x = (index) => margin.left + (index / (periods.length - 1)) * (width - margin.left - margin.right);
   const y = (value) => height - margin.bottom - ((value - min) / (max - min)) * (height - margin.top - margin.bottom);
-  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": "近五周日均单量趋势" });
+  const svg = svgEl("svg", { viewBox: `0 0 ${width} ${height}`, role: "img", "aria-label": `近${periods.length}周日均单量趋势` });
 
   svg.appendChild(svgEl("line", { x1: margin.left, y1: height - margin.bottom, x2: width - margin.right, y2: height - margin.bottom, stroke: "#cbd5e1" }));
   periods.forEach((period, index) => {
@@ -386,8 +390,8 @@ function renderTable(selectionValue) {
     const periodRow = selectedPeriodRow(store);
     const dailyOrders = periodRow?.dailyOrders ?? store.dailyOrders;
     const staff = periodRow?.staff ?? store.staff;
-    const ordersPerPerson = periodRow?.ordersPerPerson ?? store.ordersPerPerson;
-    const loadRate = ordersPerPerson / data.standardOrdersPerPerson;
+    const ordersPerPerson = periodRow ? periodRow.ordersPerPerson : store.ordersPerPerson;
+    const loadRate = ordersPerPerson === null ? null : ordersPerPerson / data.standardOrdersPerPerson;
     const wow = periodRow ? periodRow.wow : store.wow;
     const laborPerOrder = dailyOrders ? store.laborDaily / dailyOrders : null;
     const row = document.createElement("tr");
@@ -396,7 +400,7 @@ function renderTable(selectionValue) {
       <td><span class="grade-pill ${gradeClass(store.rating.grade922)}">${store.rating.grade922 || "暂无"}</span></td>
       <td>${fmt.format(staff)}</td>
       <td>${fmt.format(dailyOrders)}</td>
-      <td>${fmt.format(ordersPerPerson)}</td>
+      <td>${fmtValue(ordersPerPerson)}</td>
       <td><span class="pill ${statusClass({ ...store, loadRate })}">${pct(loadRate)}</span></td>
       <td>${wow === null || wow === undefined ? "-" : signedPct(wow)}</td>
       <td>${scoreWithDelta(store.rating.score922, store.rating.scoreChange)}</td>
@@ -474,7 +478,8 @@ function renderScoreChart(selectionValue) {
     const rating = store.rating;
     svg.appendChild(textEl(store.name.replace("店", ""), { x: 0, y: y + 21, class: "chart-label" }));
     if (rating.score916 === null || rating.score916 === undefined || rating.score922 === null || rating.score922 === undefined) {
-      svg.appendChild(textEl("暂无本期评分", { x: margin.left, y: y + 21, class: "axis-label" }));
+      const missingDate = rating.score922 === null || rating.score922 === undefined ? data.ratingCurrentDate : data.ratingPreviousDate;
+      svg.appendChild(textEl(`缺少${missingDate}评分，暂无可比变化`, { x: margin.left, y: y + 21, class: "axis-label" }));
       return;
     }
     svg.appendChild(svgEl("line", { x1: x(rating.score916), y1: y + 16, x2: x(rating.score922), y2: y + 16, stroke: rating.scoreChange >= 0 ? "#0f766e" : "#be123c", "stroke-width": 4, "stroke-linecap": "round" }));
@@ -726,7 +731,9 @@ function renderDashboard(selectionValue) {
 
 function init() {
   document.getElementById("periodLine").textContent = `统计期：${data.period}；环比对比：${data.comparisonPeriod}；评分对比：${data.ratingPreviousDate}与${data.ratingCurrentDate}（可比${data.ratingSummary.comparableStoreCount}/${data.ratingSummary.totalStoreCount}店）。`;
-  document.getElementById("sourceLine").textContent = `来源：${data.sourceWorkbook}；人效标准：${data.standardOrdersPerPerson} 单/人/天；24小时排班按12小时班、月休2天测算。`;
+  document.getElementById("sourceLine").textContent = `来源：${data.sourceWorkbook}；人效标准：${data.standardOrdersPerPerson} 单/人/天；24小时排班按12小时班、月休2天测算。${data.laborCostNote}小时画像采用${data.hourlyPeriod}全期小时单量均值。`;
+  document.getElementById('scoreBenchmark').textContent = `${data.ratingCurrentDate}综合体验分`;
+  document.getElementById('ratingSourceLine').textContent = `评分对比${data.ratingPreviousDate}与${data.ratingCurrentDate}；评分变化只使用两期均有数据的同一批门店。无毛利、实际工时和完整履约明细，暂不形成盈利排名。`;
   document.getElementById("scoreHeaderScope").textContent = `${data.ratingCurrentDate}，较${data.ratingPreviousDate}`;
   document.getElementById("displayScoreHeaderScope").textContent = `${data.ratingCurrentDate}，较${data.ratingPreviousDate}`;
   initStoreSelect();
