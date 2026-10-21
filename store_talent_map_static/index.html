@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071814" />
+    <meta name="description" content="优沃森全国门店开业进度与人员编制动态地图" />
+    <title>优沃森门店人力地图</title>
+    <link rel="stylesheet" href="./styles.css?v=3" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="优沃森门店人力地图首页">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span><strong>优沃森</strong><small>STORE TALENT MAP</small></span>
+        </a>
+        <div class="topbar-center">
+          <span class="eyebrow">全国门店网络</span>
+          <h1>开店与人力作战地图</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="data-button" id="openData"><span>＋</span> 数据管理</button>
+          <span class="live"><i></i> 数据已更新</span>
+          <span class="date">2026.10.20</span>
+        </div>
+      </header>
+
+      <section class="metrics" aria-label="核心指标">
+        <article><span>门店总数</span><strong id="metricStores">4</strong><em>家</em></article>
+        <article><span>已开业</span><strong id="metricOpen">2</strong><em>家</em></article>
+        <article><span>待开业</span><strong id="metricPending">2</strong><em>家</em></article>
+        <article><span>标准编制</span><strong id="metricSeats">16</strong><em>席</em></article>
+        <article><span>当前在职</span><strong id="metricActive">10</strong><em>人</em></article>
+        <article class="alert-metric"><span>待招聘</span><strong id="metricVacant">6</strong><em>人</em></article>
+      </section>
+
+      <main class="workspace">
+        <section class="map-card" aria-label="全国门店地图">
+          <div class="map-toolbar">
+            <div>
+              <p class="section-kicker">STORE NETWORK</p>
+              <h2 id="mapTitle">全国总览</h2>
+            </div>
+            <div class="map-controls">
+              <div class="segmented" role="group" aria-label="门店状态筛选">
+                <button class="active" data-filter="all">全部 <b>4</b></button>
+                <button data-filter="open">已开业 <b>2</b></button>
+                <button data-filter="pending">待开业 <b>2</b></button>
+              </div>
+              <button id="backChina" class="back-button" hidden aria-label="返回全国地图">
+                <span>←</span> 全国
+              </button>
+            </div>
+          </div>
+
+          <div class="map-stage" id="mapStage">
+            <div class="map-grid" aria-hidden="true"></div>
+            <div class="china-map" id="chinaMap">
+              <svg viewBox="0 0 920 650" role="img" aria-label="中国地图总览，显示上海、无锡和苏州门店聚合点">
+                <defs>
+                  <linearGradient id="landGradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#163f35" />
+                    <stop offset="1" stop-color="#0b2923" />
+                  </linearGradient>
+                  <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+                <path class="china-shape" d="M105 214 L149 180 L205 172 L246 133 L319 131 L358 94 L412 110 L444 87 L500 100 L530 138 L575 144 L613 180 L666 183 L704 220 L760 232 L789 275 L836 302 L822 342 L791 363 L792 399 L754 417 L737 461 L700 467 L665 512 L613 521 L578 555 L538 543 L503 574 L458 563 L434 526 L397 506 L360 515 L329 487 L288 476 L271 439 L220 424 L202 392 L160 378 L145 336 L111 309 L122 272 L94 244 Z" />
+                <g class="province-lines" aria-hidden="true">
+                  <path d="M149 180 L190 225 L169 280 L122 272 M205 172 L229 220 L190 225 M246 133 L271 194 L229 220 M319 131 L327 186 L271 194 M358 94 L389 161 L327 186 M412 110 L429 178 L389 161 M500 100 L495 173 L429 178 M530 138 L547 207 L495 173 M613 180 L594 236 L547 207 M704 220 L670 267 L594 236 M760 232 L734 290 L670 267 M789 275 L750 328 L734 290 M836 302 L792 342 L750 328 M822 342 L765 379 L750 328 M791 399 L735 395 L765 379 M754 417 L704 439 L735 395 M737 461 L680 462 L704 439 M700 467 L647 489 L680 462 M665 512 L605 486 L647 489 M613 521 L566 487 L605 486 M578 555 L531 510 L566 487 M503 574 L488 513 L531 510 M458 563 L445 495 L488 513 M397 506 L421 453 L445 495 M360 515 L368 448 L421 453 M288 476 L312 420 L368 448 M220 424 L267 380 L312 420 M160 378 L211 339 L267 380 M145 336 L198 291 L211 339 M111 309 L169 280 L198 291 M169 280 L229 276 L190 225 M229 276 L271 194 M229 276 L211 339 M271 194 L316 251 L327 186 M316 251 L229 276 M316 251 L368 300 L421 264 L389 161 M368 300 L312 420 M368 300 L421 453 M421 264 L429 178 M421 264 L486 245 L495 173 M486 245 L547 207 M486 245 L514 321 L454 353 L368 300 M514 321 L574 286 L594 236 M574 286 L670 267 M574 286 L623 352 L514 321 M623 352 L750 328 M623 352 L680 462 M623 352 L566 487 M514 321 L531 410 L566 487 M454 353 L445 495 M454 353 L531 410 M267 380 L368 300" />
+                </g>
+                <g class="map-labels" aria-hidden="true">
+                  <text x="217" y="240">新疆</text><text x="388" y="204">内蒙古</text><text x="250" y="350">西藏</text>
+                  <text x="384" y="374">四川</text><text x="491" y="449">贵州</text><text x="569" y="454">湖南</text>
+                  <text x="647" y="398">江西</text><text x="707" y="327">安徽</text><text x="739" y="279">江苏</text>
+                  <text x="572" y="248">山西</text><text x="650" y="277">河南</text><text x="696" y="467">福建</text>
+                  <text x="583" y="526">广西</text><text x="667" y="515">广东</text><text x="777" y="390">浙江</text>
+                </g>
+                <g class="south-sea" aria-hidden="true">
+                  <rect x="770" y="462" width="88" height="127" rx="8" />
+                  <path d="M812 480 l7 12 -10 13 8 14 -7 15 8 18 -6 18" />
+                  <circle cx="794" cy="506" r="2"/><circle cx="830" cy="541" r="2"/><circle cx="800" cy="558" r="2"/>
+                </g>
+              </svg>
+              <div id="cityClusters"></div>
+            </div>
+
+            <div class="shanghai-map city-map" id="shanghaiMap" hidden>
+              <div class="tile-map" id="tileMap" aria-label="百度地图真实道路底图"></div>
+              <div id="storeMarkers"></div>
+              <div class="unlocated-stores" id="unlocatedStores" hidden></div>
+              <div class="map-attribution">地图数据 © 百度地图 · 点位按经纬度投影</div>
+            </div>
+
+            <div class="legend">
+              <span><i class="dot open"></i>已开业</span>
+              <span><i class="dot pending"></i>待开业</span>
+              <span class="legend-note">点位可点击下钻</span>
+            </div>
+            <div class="map-hint" id="mapHint"><span>↗</span> 点击城市聚合点，查看门店</div>
+          </div>
+
+          <div class="city-strip">
+            <span class="city-rank">城市分布</span>
+            <button id="cityShanghai"><b>上海</b><span><i></i></span><strong>4 家</strong></button>
+            <p>更多城市点位接入后，将自动出现在全国地图中</p>
+          </div>
+        </section>
+
+        <aside class="detail-panel" id="detailPanel" aria-live="polite">
+          <div class="panel-empty" id="panelEmpty">
+            <div class="empty-illustration"><span>⌖</span></div>
+            <p class="section-kicker">STORE DETAIL</p>
+            <h2>选择一个门店点位</h2>
+            <p>展开城市地图后，点击任意点位查看该店开业状态、岗位编制与人员明细。</p>
+            <button id="emptyExplore">展开门店点位 <span>→</span></button>
+          </div>
+
+          <div class="panel-content" id="panelContent" hidden>
+            <div class="panel-head">
+              <div class="store-index" id="storeIndex">01</div>
+              <button class="panel-close" id="panelClose" aria-label="关闭门店详情">×</button>
+            </div>
+            <div class="status-row">
+              <span class="status-pill" id="statusPill"></span>
+              <span class="opening-date" id="openingDate"></span>
+            </div>
+            <h2 id="storeName"></h2>
+            <p class="store-address" id="storeAddress"></p>
+            <p class="coordinate-meta" id="coordinateMeta"></p>
+            <div class="capacity-bar">
+              <div><span>编制到岗率</span><b id="fillRate">0%</b></div>
+              <span class="bar"><i id="fillBar"></i></span>
+              <small id="fillCaption"></small>
+            </div>
+
+            <div class="tabs" role="tablist">
+              <button class="active" data-tab="seats" role="tab">岗位席位 <b id="seatCount">4</b></button>
+              <button data-tab="history" role="tab">离职记录 <b id="historyCount">0</b></button>
+            </div>
+            <div class="people-list" id="peopleList"></div>
+            <div class="panel-foot">
+              <span>标准配置</span><strong>1 店长 · 3 拣货员</strong>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <footer>
+        <span>待招口径：逐店按 1 店长 + 3 拣货员计算，超编不抵扣其他门店缺口</span>
+        <span>数据来源：优沃森门店人力数据 · 更新于 2026.10.20</span>
+      </footer>
+    </div>
+
+    <div class="modal" id="dataModal" hidden>
+      <button class="modal-backdrop" id="closeDataBackdrop" aria-label="关闭数据管理"></button>
+      <section class="data-drawer" role="dialog" aria-modal="true" aria-labelledby="dataTitle">
+        <div class="drawer-head">
+          <div><p class="section-kicker">DATA CENTER</p><h2 id="dataTitle">门店数据管理</h2></div>
+          <button id="closeData" class="panel-close" aria-label="关闭">×</button>
+        </div>
+        <div class="upload-intro">
+          <span class="upload-icon">⇧</span>
+          <div><strong>上传新的点位与人力数据</strong><p>每行代表一位员工或一个待招席位；相同门店编号会自动合并。</p></div>
+        </div>
+        <label class="dropzone" id="dropzone">
+          <input type="file" id="dataFile" accept=".xlsx,.xls,.csv,.json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,application/json" />
+          <span class="file-mark">XLSX</span>
+          <strong>点击选择文件，或拖拽到这里</strong>
+          <small>支持 Excel（XLSX、XLS）、CSV、JSON</small>
+        </label>
+        <button class="template-button" id="downloadTemplate"><span>↓</span><div><strong>下载 Excel 数据模板</strong><small>含字段说明与 4 条示例数据</small></div><b>XLSX</b></button>
+        <div class="field-guide">
+          <span>必填字段</span>
+          <p><b>门店编号</b>　<b>门店名称</b>　<b>城市</b>　<b>地址</b>　<b>开业状态</b>　<b>岗位</b>　<b>人员状态</b>（同时兼容英文表头）</p>
+          <p>经纬度 <b>longitude / latitude</b> 为推荐字段，用于全国点位精准定位。</p>
+        </div>
+        <div class="import-preview" id="importPreview" hidden>
+          <div class="preview-title"><strong id="previewFileName">文件预览</strong><span id="previewRows"></span></div>
+          <div class="preview-metrics">
+            <div><b id="previewStores">0</b><span>门店</span></div><div><b id="previewActive">0</b><span>在职</span></div><div><b id="previewExited">0</b><span>离职</span></div><div><b id="previewVacant">0</b><span>待招</span></div>
+          </div>
+          <p class="validation-message" id="validationMessage"></p>
+        </div>
+        <div class="drawer-actions">
+          <button class="secondary" id="resetDemo">恢复演示数据</button>
+          <button class="primary" id="applyImport" disabled>应用并刷新地图</button>
+        </div>
+        <p class="privacy-note">文件仅在当前浏览器中解析，不会上传至第三方服务。</p>
+      </section>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="./app.js?v=3"></script>
+  </body>
+</html>
