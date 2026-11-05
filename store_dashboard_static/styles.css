@@ -135,7 +135,7 @@ select {
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 14px;
 }
@@ -218,7 +218,28 @@ select {
 
 .period-control {
   margin-top: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 550px;
 }
+.grade-date { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; }
+.trend-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 11px; }
+
+.period-modes { display: flex; gap: 4px; }
+.period-modes button, #applyCustomPeriod {
+  border: 1px solid var(--line); background: var(--panel-soft); color: var(--ink);
+  border-radius: 8px; padding: 9px 14px; font: inherit; cursor: pointer;
+}
+.period-modes button[aria-pressed="true"], #applyCustomPeriod {
+  background: var(--teal); color: white; border-color: var(--teal);
+}
+.custom-dates { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.custom-dates input {
+  font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); color: var(--ink);
+}
+#customPeriodError { margin: 5px 0 0; font-size: 12px; color: #be123c; }
+[hidden] { display: none !important; }
 
 .table-scope-note {
   margin: 7px 0 0;

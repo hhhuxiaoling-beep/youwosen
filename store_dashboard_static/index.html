@@ -35,8 +35,24 @@
             <p class="table-scope-note" id="tableScopeNote"></p>
           </div>
           <div class="topbar-actions period-control">
-            <label for="periodSwitch">时间</label>
-            <select id="periodSwitch" aria-label="选择时间周期"></select>
+            <div class="period-modes" role="group" aria-label="周期类型">
+              <button type="button" data-mode="week" aria-pressed="true">周</button>
+              <button type="button" data-mode="month" aria-pressed="false">月</button>
+              <button type="button" data-mode="custom" aria-pressed="false">自定义</button>
+            </div>
+            <div id="presetPeriodControl">
+              <label for="periodSwitch">时间</label>
+              <select id="periodSwitch" aria-label="选择时间周期"></select>
+            </div>
+            <div id="customPeriodControl" hidden>
+              <div class="custom-dates">
+                <input id="customStart" type="date" aria-label="自定义开始日期" />
+                <span>至</span>
+                <input id="customEnd" type="date" aria-label="自定义结束日期" />
+                <button id="applyCustomPeriod" type="button">应用</button>
+              </div>
+              <p id="customPeriodError" role="alert"></p>
+            </div>
           </div>
         </div>
         <div class="table-wrap">
@@ -44,7 +60,7 @@
             <thead>
               <tr>
                 <th>门店</th>
-                <th>门店等级</th>
+                <th><span>门店等级</span><small>按所选期末匹配</small></th>
                 <th><span>平均在职人数</span><small>拣货员</small></th>
                 <th>日均单量</th>
                 <th>人均单量</th>
@@ -53,7 +69,6 @@
                 <th><span>综合体验分</span><small id="scoreHeaderScope"></small></th>
                 <th><span>客户端展示评分</span><small id="displayScoreHeaderScope"></small></th>
                 <th>单均人工</th>
-                <th>24h在册建议</th>
               </tr>
             </thead>
             <tbody id="storeTable"></tbody>
@@ -100,7 +115,7 @@
           <div class="panel-heading">
             <div>
               <p class="eyebrow">经营优先级</p>
-              <h2>本周需要领导快速看到的事</h2>
+              <h2>当前周期经营重点</h2>
             </div>
           </div>
           <div class="signal-grid" id="signalGrid"></div>
@@ -171,26 +186,15 @@
         </div>
       </section>
 
-      <section class="layout-grid">
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">小时画像</p>
-              <h2>单量峰谷与覆盖压力</h2>
-            </div>
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">小时画像</p>
+            <h2>10月小时单量峰谷</h2>
           </div>
-          <div id="hourChart" class="chart tall"></div>
-        </article>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">24小时运营</p>
-              <h2>排班配置建议</h2>
-            </div>
-          </div>
-          <div id="shiftPlan" class="shift-plan"></div>
-        </article>
+          <span class="benchmark">10/1—10/31 固定参考</span>
+        </div>
+        <div id="hourChart" class="chart tall"></div>
       </section>
 
       <footer>
