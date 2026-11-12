@@ -8,11 +8,7 @@ import math
 import re
 from zoneinfo import ZoneInfo
 
-
-class PayrollError(Exception):
-    def __init__(self, message, status=400):
-        super().__init__(message)
-        self.status = status
+from .diagnostics import DatabaseDiagnostic, PayrollError, diagnose
 
 
 DEFAULT_RULES = {
@@ -100,25 +96,45 @@ class PostgresStore:
         self.url, self.dataset, self.connector = url, dataset, connector
 
     def connect(self):
-        import psycopg
-        from psycopg.conninfo import conninfo_to_dict
-        options = conninfo_to_dict(self.url)
-        if options.get('sslmode') in {'disable', 'allow', 'prefer'}:
-            raise PayrollError('薪资数据库必须启用SSL：请使用sslmode=require或verify-full。', 503)
+        try:
+            import psycopg
+            from psycopg.conninfo import conninfo_to_dict
+        except ImportError as error:
+            raise diagnose(error, 'connect') from None
+        try:
+            options = conninfo_to_dict(self.url)
+        except Exception:
+            raise DatabaseDiagnostic('URI', 'configuration') from None
+        if (options.get('password', '').lower() in {'[your-password]', 'your-password', '[your_password]'}
+                or any(token in options.get(key, '').lower() for key in ('host', 'user')
+                       for token in ('[project-ref]', '[pooler-host]'))):
+            raise DatabaseDiagnostic('PLACEHOLDER', 'configuration')
+        if options.get('sslmode', 'require') not in {'require', 'verify-ca', 'verify-full'}:
+            raise DatabaseDiagnostic('SSL_CONFIG', 'configuration')
         options.setdefault('sslmode', 'require')
         options.update(connect_timeout=12, prepare_threshold=None)
-        conn = (self.connector or psycopg.connect)(**options)
+        direct = bool(re.fullmatch(r'db\.[a-z0-9-]+\.supabase\.co', options.get('host', ''), re.I))
+        try:
+            conn = (self.connector or psycopg.connect)(**options)
+        except Exception as error:
+            raise diagnose(error, 'connect', direct=direct) from None
         try:
             conn.execute("SET LOCAL statement_timeout = '20s'")
-        except Exception:
-            conn.close()
-            raise
+        except Exception as error:
+            try:
+                conn.close()
+            except Exception:
+                pass
+            raise diagnose(error, 'session') from None
         return conn
 
     def initialize(self):
         # Only creates our dedicated table. Never drops or changes existing tables.
-        with self.connect() as conn:
-            conn.execute('''CREATE TABLE IF NOT EXISTS yws_payroll_months (
+        stage = 'connect'
+        try:
+            with self.connect() as conn:
+                stage = 'create'
+                conn.execute('''CREATE TABLE IF NOT EXISTS yws_payroll_months (
                 dataset_id TEXT NOT NULL,
                 month TEXT NOT NULL CHECK (month ~ '^\\d{4}-(0[1-9]|1[0-2])$'),
                 revision BIGINT NOT NULL DEFAULT 1 CHECK (revision > 0),
@@ -127,14 +143,19 @@ class PostgresStore:
                 updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (dataset_id, month)
             )''')
-            # Supabase exposes public-schema tables through PostgREST. With RLS
-            # and no public policies, anon/authenticated API keys cannot read HR
-            # rows; the table-owner database connection remains server-side.
-            conn.execute('ALTER TABLE yws_payroll_months ENABLE ROW LEVEL SECURITY')
+                # No public policies: payroll stays behind server-side access.
+                stage = 'rls'
+                conn.execute('ALTER TABLE yws_payroll_months ENABLE ROW LEVEL SECURITY')
+                stage = 'commit'
+        except Exception as error:
+            raise diagnose(error, stage) from None
 
     def list_months(self):
-        with self.connect() as conn:
-            rows = conn.execute('SELECT month, revision, updated_at FROM yws_payroll_months WHERE dataset_id=%s ORDER BY month DESC', (self.dataset,)).fetchall()
+        try:
+            with self.connect() as conn:
+                rows = conn.execute('SELECT month, revision, updated_at FROM yws_payroll_months WHERE dataset_id=%s ORDER BY month DESC', (self.dataset,)).fetchall()
+        except Exception as error:
+            raise diagnose(error, 'read') from None
         return [{'month': r[0], 'status': 'draft', 'updatedAt': r[2].isoformat(), 'revision': r[1]} for r in rows]
 
     def get(self, month):
