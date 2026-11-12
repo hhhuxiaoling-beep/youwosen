@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { payrollFetch as fetch } from "../bridge";
+import { payrollFetch as fetch, subscribeCloudRefresh } from "../bridge";
+import { readCloudSnapshot, type MonthItem } from "../lib/cloud";
 import {
   AlertTriangle,
   BarChart3,
@@ -46,7 +47,6 @@ import {
 import { exportPayrollWorkbook, readPayrollWorkbook, type WorkbookImport } from "../lib/excel";
 
 type View = "summary" | "employees" | "pickers" | "managers" | "ratings" | "adjustments" | "rules";
-type MonthItem = { month: string; status: string; updatedAt: string };
 type Field<T> = {
   key: keyof T;
   label: string;
@@ -440,14 +440,37 @@ export default function Home() {
   const [importing, setImporting] = useState(false);
   const [importPreview, setImportPreview] = useState<(WorkbookImport & { fileName: string }) | null>(null);
   const importInput = useRef<HTMLInputElement>(null);
+  const cloudState = useRef({ dirty, saving, loading, month: data?.month });
+  cloudState.current = { dirty, saving, loading, month: data?.month };
+
+  const refreshCloud = async (preferredMonth?: string, automatic = false) => {
+    const state = cloudState.current;
+    if (state.saving || state.loading) {
+      setNotice("云端月份已变化，请等待当前操作完成后点击“重新加载云端数据”。");
+      return;
+    }
+    if (state.dirty) {
+      if (automatic) {
+        setNotice("云端月份已变化。当前有未保存的修改，请保存后点击“重新加载云端数据”。");
+        return;
+      }
+      if (!window.confirm("当前修改尚未保存，重新加载会丢弃这些修改，是否继续？")) return;
+    }
+    setLoading(true); setError("");
+    try {
+      const snapshot = await readCloudSnapshot(fetch, preferredMonth || state.month);
+      setMonths(snapshot.months); setData(snapshot.data); setDirty(false); setImportPreview(null);
+      setNotice(`已更新云端月份列表，当前为${monthLabel(snapshot.data.month)}，共${snapshot.data.employees.length}名员工`);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "刷新云端数据失败"); }
+    finally { setLoading(false); }
+  };
 
   useEffect(() => {
-    fetch("/api/months").then(async (response) => {
-      const payload = await response.json() as { error?: string; months: MonthItem[]; current: PayrollMonthData };
-      if (!response.ok) throw new Error(payload.error || "读取数据失败");
-      setMonths(payload.months);
-      setData(normalizeMonthData(payload.current));
+    readCloudSnapshot(fetch).then((snapshot) => {
+      setMonths(snapshot.months);
+      setData(snapshot.data);
     }).catch((reason) => setError(reason instanceof Error ? reason.message : "读取数据失败")).finally(() => setLoading(false));
+    return subscribeCloudRefresh((month) => { void refreshCloud(month, true); });
   }, []);
 
   const update = (next: PayrollMonthData) => { setData(next); setDirty(true); setNotice(""); };
@@ -556,10 +579,10 @@ export default function Home() {
         <header className="topbar">
           <div className="page-title"><button className="menu-button" onClick={() => setMobileOpen(true)}><Menu size={20} /></button><div><span>{selectedNav.helper}</span><h1>{selectedNav.label}</h1></div></div>
           <div className="top-actions">
-            <label className="month-select"><CalendarDays size={17} /><select value={data.month} onChange={(event) => selectMonth(event.target.value)}>{months.map((item) => <option key={item.month} value={item.month}>{monthLabel(item.month)}</option>)}</select></label>
+            <label className="month-select"><CalendarDays size={17} /><select disabled={loading || saving} value={data.month} onChange={(event) => selectMonth(event.target.value)}>{months.map((item) => <option key={item.month} value={item.month}>{monthLabel(item.month)}</option>)}</select></label>
             <button className="secondary-button copy-button" onClick={() => setCloneOpen(!cloneOpen)}><Copy size={16} /><span>复制到新月份</span></button>
-            <button className="primary-button" disabled={saving || !dirty} onClick={save}>{saving ? <RefreshCw className="spin" size={16} /> : <Save size={16} />}<span>{saving ? "保存中" : dirty ? "保存本月" : "已保存"}</span></button>
-            <button className="icon-button" onClick={() => selectMonth(data.month, true)} aria-label="重新加载云端数据" title="重新加载云端数据"><RefreshCw size={17} /></button>
+            <button className="primary-button" disabled={loading || saving || !dirty} onClick={save}>{saving ? <RefreshCw className="spin" size={16} /> : <Save size={16} />}<span>{saving ? "保存中" : dirty ? "保存本月" : "已保存"}</span></button>
+            <button className="secondary-button" disabled={loading || saving} onClick={() => { void refreshCloud(); }} aria-label="重新加载云端数据" title="刷新全部月份及当前月份数据"><RefreshCw size={17} /><span>{loading ? "加载中" : "重新加载云端数据"}</span></button>
             <button className="icon-button logout-button" onClick={() => { void fetch("/api/auth/logout"); }} aria-label="锁定薪资中心" title="锁定薪资中心"><LogOut size={17} /></button>
           </div>
         </header>

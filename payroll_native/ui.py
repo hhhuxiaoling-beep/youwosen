@@ -30,6 +30,21 @@ def _database_failure(error, stage='operation'):
     st.stop()
 
 
+def _refresh_cloud(month=None):
+    st.session_state['_payroll_cloud_refresh'] = st.session_state.get('_payroll_cloud_refresh', 0) + 1
+    st.session_state['_payroll_preferred_month'] = month
+    st.session_state.pop('_payroll_inventory', None)
+
+
+def _cloud_inventory(store):
+    result = []
+    for item in store.list_months():
+        data = store.get(item['month'])
+        result.append({'月份': item['month'], '员工人数': len(data['employees']),
+                       '拣货员数据行': len(data['picker_rows']), '店长数据行': len(data['manager_rows'])})
+    return result
+
+
 def render_payroll_center():
     require_access()
     left, right = st.columns([5, 1])
@@ -58,6 +73,18 @@ def render_payroll_center():
         _database_failure(error, 'configuration')
     st.caption('云端数据库已连接。修改后请点击“保存本月”；未保存的编辑只留在当前页面。')
     with st.expander('数据备份与迁移（不覆盖已有月份）'):
+        if st.button('查看云端已存月份及人数', key='_payroll_inspect_months'):
+            try:
+                st.session_state['_payroll_inventory'] = _cloud_inventory(store)
+            except Exception as error:
+                st.error(str(diagnose(error)))
+        if '_payroll_inventory' in st.session_state:
+            inventory = st.session_state['_payroll_inventory']
+            if inventory:
+                st.dataframe(inventory, hide_index=True)
+                st.caption('这里显示数据库中实际保存的人数；请在下方月份下拉框选择对应月份查看明细。')
+            else:
+                st.info('云端暂无已保存月份，请导入备份。')
         if st.button('生成当前云端备份', key='_payroll_make_backup'):
             try:
                 months = [store.get(row['month']) for row in store.list_months()]
@@ -74,12 +101,19 @@ def render_payroll_center():
                 if not isinstance(payload, dict) or payload.get('format') != 'yws_payroll_backup_v1':
                     raise PayrollError('不支持的备份格式，请使用完整月份JSON备份。')
                 count = store.import_months(payload.get('months'))
-                st.success(f'已导入{count}个月份。点击界面中的“重新加载云端数据”查看。')
+                _refresh_cloud(max(month['month'] for month in payload['months']))
+                st.success(f'已导入{count}个月份，正在更新下方月份列表。若有未保存修改，请保存后点击“重新加载云端数据”。')
             except PayrollError as error:
                 st.error(str(error))
+                if error.status == 409:
+                    _refresh_cloud()
+                    st.info('本次整批导入已取消。可先点击“查看云端已存月份及人数”，再在下方切换月份查看已有数据。')
             except Exception as error:
                 st.error(str(diagnose(error)))
-    event = _component(reply=st.session_state.get('_payroll_reply'), key='_payroll_component', default=None)
+    event = _component(reply=st.session_state.get('_payroll_reply'),
+                       refresh_token=st.session_state.get('_payroll_cloud_refresh', 0),
+                       preferred_month=st.session_state.get('_payroll_preferred_month'),
+                       key='_payroll_component', default=None)
     if not isinstance(event, dict) or not isinstance(event.get('id'), str): return
     if event['id'] == st.session_state.get('_payroll_processed'): return
     if len(event['id']) > 100: return

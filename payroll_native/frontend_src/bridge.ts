@@ -4,6 +4,13 @@ type Pending = { event: RequestEvent; resolve: (value: Response) => void; timer?
 const queue: Pending[] = [];
 let active: Pending | undefined;
 let ready = false;
+let refreshToken: number | undefined;
+const refreshListeners = new Set<(month?: string) => void>();
+
+export function subscribeCloudRefresh(listener: (month?: string) => void): () => void {
+  refreshListeners.add(listener);
+  return () => { refreshListeners.delete(listener); };
+}
 const parentOrigin = (() => { try { return new URL(document.referrer).origin; } catch { return window.location.origin; } })();
 const send = (type: string, fields: Record<string, unknown> = {}) => {
   window.parent.postMessage({ isStreamlitMessage: true, type, ...fields }, parentOrigin);
@@ -25,6 +32,13 @@ function pump() {
 window.addEventListener("message", (message) => {
   if (message.source !== window.parent || message.origin !== parentOrigin || message.data?.type !== "streamlit:render") return;
   ready = true;
+  const token = message.data.args?.refresh_token;
+  const preferred = message.data.args?.preferred_month;
+  if (typeof token === "number" && token !== refreshToken) {
+    const changed = refreshToken !== undefined;
+    refreshToken = token;
+    if (changed) refreshListeners.forEach(listener => listener(typeof preferred === "string" ? preferred : undefined));
+  }
   const reply = message.data.args?.reply;
   if (reply && active && reply.id === active.event.id) {
     clearTimeout(active.timer);
