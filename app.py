@@ -10,6 +10,8 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from app_auth import require_login
+
 from utils.metrics import (
     BUSINESS_OWNERS,
     PRIORITY_ORDER,
@@ -41,14 +43,14 @@ def load_data_loader():
     return module
 
 
-data_loader = load_data_loader()
-
-
 st.set_page_config(
     page_title="优沃森项目招聘进度看板",
     page_icon="📊",
     layout="wide",
 )
+
+require_login()
+data_loader = load_data_loader()
 
 
 st.markdown(
