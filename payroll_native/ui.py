@@ -11,7 +11,13 @@ from .store import PostgresStore, PayrollError
 from .diagnostics import DatabaseDiagnostic, diagnose
 
 
-_component = components.declare_component('yws_payroll_native', path=str(Path(__file__).parent/'frontend_dist'))
+_frontend_path = Path(__file__).parent / 'frontend_dist'
+_frontend_version = hashlib.sha256((_frontend_path / 'index.html').read_bytes()).hexdigest()[:12]
+# Streamlit and the browser can retain a mounted iframe across Python updates.
+# Give each compiled frontend its own asset URL and widget identity so new
+# builds cannot keep showing the previous build's month list and controls.
+_component = components.declare_component(
+    f'yws_payroll_native_{_frontend_version}', path=str(_frontend_path))
 
 
 def _setting(key, default=''):
@@ -113,7 +119,7 @@ def render_payroll_center():
     event = _component(reply=st.session_state.get('_payroll_reply'),
                        refresh_token=st.session_state.get('_payroll_cloud_refresh', 0),
                        preferred_month=st.session_state.get('_payroll_preferred_month'),
-                       key='_payroll_component', default=None)
+                       key=f'_payroll_component_{_frontend_version}', default=None)
     if not isinstance(event, dict) or not isinstance(event.get('id'), str): return
     if event['id'] == st.session_state.get('_payroll_processed'): return
     if len(event['id']) > 100: return
