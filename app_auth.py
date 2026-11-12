@@ -112,20 +112,41 @@ def _render_login_design() -> None:
         [data-testid="stForm"] label, [data-testid="stForm"] label p {
             color: #cdddf0 !important; font-size: 12px !important; font-weight: 500;
         }
-        [data-testid="stForm"] [data-baseweb="input"] {
+        [data-testid="stForm"] [data-baseweb="input"],
+        [data-testid="stForm"] [data-testid="stTextInputRootElement"] {
             background: #081426 !important; border: 1px solid #2d415d !important;
             border-radius: 11px !important;
         }
-        [data-testid="stForm"] [data-baseweb="input"]:focus-within {
+        [data-testid="stForm"] [data-baseweb="base-input"],
+        [data-testid="stForm"] [data-testid="stTextInputRootElement"] > div {
+            background: #081426 !important; color: #edf5ff !important;
+        }
+        [data-testid="stForm"] [data-baseweb="input"]:focus-within,
+        [data-testid="stForm"] [data-testid="stTextInputRootElement"]:focus-within {
             border-color: #56d5d8 !important; box-shadow: 0 0 0 3px rgba(86, 213, 216, .12);
         }
         [data-testid="stForm"] input {
-            background: transparent !important; color: #edf5ff !important;
+            background: #081426 !important; color: #edf5ff !important;
+            -webkit-text-fill-color: #edf5ff !important;
             caret-color: #67e2df; min-height: 48px;
         }
-        [data-testid="stForm"] input::placeholder { color: #617795 !important; }
-        [data-testid="stForm"] [data-baseweb="input"] button {
-            background: transparent !important; color: #98b0ce !important;
+        [data-testid="stForm"] input::placeholder {
+            color: #9bafca !important; -webkit-text-fill-color: #9bafca !important; opacity: 1;
+        }
+        [data-testid="stForm"] input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px #081426 inset !important;
+            -webkit-text-fill-color: #edf5ff !important; caret-color: #67e2df;
+        }
+        [data-testid="stForm"] [data-testid="stTextInput"] button,
+        [data-testid="stForm"] [data-baseweb="input"] button,
+        [data-testid="stForm"] [data-testid="stTextInputRootElement"] button {
+            background: #081426 !important; color: #b6c9e2 !important;
+        }
+        [data-testid="stForm"] [data-testid="stTextInput"] svg {
+            color: #b6c9e2 !important;
+        }
+        [data-testid="stForm"] [data-testid="stInputInstructions"] {
+            color: #9bafca !important;
         }
         [data-testid="stFormSubmitButton"] button {
             width: 100%; min-height: 48px; margin-top: 10px; border: none !important;
